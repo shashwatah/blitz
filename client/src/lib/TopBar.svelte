@@ -3,7 +3,6 @@
     import {page} from "$app/stores";
 
     $: inGame = $page.url.pathname === "/game";
-    $: console.log($page.url.pathname)
 </script>
 
 <div id="topbar" class="{inGame ? "in-game" : "not-in-game"}">
@@ -11,6 +10,7 @@
     <Nav {inGame}/>
 </div>
 
+<!-- need to move the positioning and width styles out of this file into layout, or do the opposite with chessboard -->
 <style>
     #topbar {
         background: none;
