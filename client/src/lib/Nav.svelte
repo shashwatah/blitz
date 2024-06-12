@@ -1,7 +1,16 @@
+<script>
+    export let inGame;
+</script>
+
+
 <div id="nav">
-    <button class="nav-btn sec-btn" id="about-btn">about</button>
-    <button class="nav-btn sec-btn" id="rules-btn">rules</button>
-    <button class="nav-btn" id="acc-btn">sign in</button>
+    {#if inGame}
+        <button class="nav-btn" id="menu-btn"></button>
+    {:else}
+        <button class="nav-btn sec-btn" id="about-btn">about</button>
+        <button class="nav-btn sec-btn" id="rules-btn">rules</button>
+        <button class="nav-btn" id="acc-btn">sign in</button>
+    {/if}
 </div>
 
 <style>
@@ -15,15 +24,25 @@
         font-family: "Roboto Mono", sans-serif;
         font-size: 15px;
         color: #313030;
+        border: none;
         cursor: pointer;
         user-select: none;
+    }
+
+    #menu-btn {
+        width: 42.5px;
+        background: #efefef;
+    }
+
+    #menu-btn:hover {
+        transition: .1s linear;
+        background: #313030;
     }
 
     .sec-btn {
         width: auto;
         margin-right: 30px;
         background: none;
-        border: none;
     }
 
     .sec-btn:hover {
@@ -34,7 +53,6 @@
 
     #acc-btn {
         width: 130px;
-        border: none;
         background: #efefef;
     }
 
