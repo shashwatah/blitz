@@ -1,4 +1,11 @@
 <script>
+    let pieces = [{name: "king", location: "./pieces/king.svg"},  
+        {name: "queen", location: "./pieces/queen.svg"}, 
+        {name: "knight", location: "./pieces/knight.svg"}, 
+        {name: "rook", location: "./pieces/rook.svg"}, 
+        {name: "bishop", location: "./pieces/bishop.svg"},
+        {name: "pawn", location: "./pieces/pawn.svg"}]
+        
     function createChessboard() {
         let arr = [];
         for(let i = 1; i <= 8; i++) {  
@@ -7,7 +14,7 @@
                 (j+i) % 2 === 0 ? subArr.push("white") : subArr.push("black");
             } 
             arr.push(subArr);
-        }
+        } 
         return arr;
     }
     
@@ -15,10 +22,14 @@
 </script>
 
 <div id="chessboard">
-    {#each chessboard as row}
+    {#each chessboard as row, i}
         <div class="chessrow">
-            {#each row as block}
-                <div class="chessblock {block}"></div>
+            {#each row as block, j}
+                <div class="chessblock {block}">
+                    {#if i <= 1 || (7-i) <= 1}
+                        <img alt="pawn" src="./pieces/bishop-2.svg" class="black-piece"/>
+                    {/if}
+                </div>
             {/each}
         </div>
     {/each}
@@ -41,6 +52,7 @@
     .chessblock {
         height: 100%;
         width: 12.5%;
+        text-align: center;
     }
 
     .white {
@@ -50,5 +62,9 @@
     .black {
         background: #efefef;
     }
+    
+    /* .black-piece {
+        filter: invert(75%) sepia(14%) saturate(4%) hue-rotate(315deg) brightness(88%) contrast(75%);
+    } */
 </style>
 
