@@ -1,24 +1,26 @@
 <script lang="ts">
     // types need to go in a separate file
     // chessboard should be a writable store created using a chessboard class 
-    // chesspiece should be a readable store
+    // chesspieces data should be a readable store
+    // rn chess pieces are being created and store within chessboard
+    // |- ideally chess pieces should have their own state (or player state)
+    // code is still slightly janky (need to reduce verbosity of names, overuse of "chess") 
+    // |- but a major improvement, can work on top of this now. 
+
+    //data
+    import { chessPieces } from "./data";
+    const playerColor = "white";
 
     // types
-    interface ChessPiece {
-        initRow: number,
-        initCol: number[]
-    }
-
-    interface ChessPieces {
-        [name: string]: ChessPiece
-    }
-
     interface ChessBlock {
         loc: {
             row: number,
             col: number
         },
-        piece?: string
+        piece?: {
+            name: string,
+            isOpponent: boolean
+        }
     }
 
     interface ChessBlockNotation {
@@ -28,34 +30,6 @@
 
     type ChessBoard = ChessBlock[][];
     
-    // data
-    const chessPieces: ChessPieces = {
-        "king": {
-            initRow: 1,
-            initCol: [5]    
-        },
-        "queen": {
-            initRow: 1,
-            initCol: [4]
-        },
-        "rook": {
-            initRow: 1,
-            initCol: [1, 8] 
-        },
-        "knight": {
-            initRow: 1,
-            initCol: [2, 7]
-        },
-        "bishop": {
-            initRow: 1,
-            initCol: [3, 6]
-        },
-        "pawn": {
-            initRow: 2,
-            initCol: [1, 2, 3, 4, 5, 6, 7, 8]
-        }
-    }
-
     // main functions 
     function createChessBoard(): ChessBoard {
         let arr: ChessBlock[][] = [];
@@ -66,7 +40,7 @@
                     loc: {
                         row: i,
                         col: j
-                    },
+                    }
                 })
             } 
             arr.push(subArr);
@@ -84,7 +58,10 @@
             let chessPiece = chessPieces[name];
             for(let i = 0; i < chessPiece.initCol.length; i++) {
                 let row = isOpponent ? Math.abs(chessPiece.initRow-8) : chessPiece.initRow-1;
-                chessBoard[row][chessPiece.initCol[i]-1].piece = name;
+                chessBoard[row][chessPiece.initCol[i]-1].piece = {
+                    name,
+                    isOpponent
+                };
             }
         }
     }
@@ -92,10 +69,8 @@
     // aux functions 
     function getBlockColor(chessBlock: ChessBlock): string {
         if ((chessBlock.loc.row + chessBlock.loc.col) % 2 === 0) {
-            console.log("white");
             return "white";
         } else {
-            console.log("black");
             return "black";
         }
     }
@@ -107,10 +82,14 @@
         };
     }
 
-    // need to find a better way to deal with the "?"
-    function getPieceSvgLoc(pieceName?: string): string {
-        return `./pieces/${pieceName}.svg`;
+    function getChessPieceColor(chessBlock: ChessBlock): string {
+        if (chessBlock.piece?.isOpponent) {
+            return playerColor === "white" ? "black" : "white";
+        } else {
+            return playerColor;
+        }
     }
+
 
     let chessBoard: ChessBoard = createChessBoard();
     populateChessBoard(chessBoard);
@@ -120,9 +99,11 @@
     {#each chessBoard as row}
         <div class="chessboard-row">
             {#each row as block}
-                <div class="chessboard-block {getBlockColor(block)}-block">
-                    {#if "piece" in block}
-                        <img alt="{block.piece}" src="{getPieceSvgLoc(block.piece)}" class="chess-piece" draggable="false"/>
+                <div class="chessboard-block {getBlockColor(block)}-chessboard-block">
+                    {#if block?.piece}
+                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" class="chess-piece {getChessPieceColor(block)}-chess-piece">
+                            {@html chessPieces[block.piece.name].svg}
+                        </svg>
                     {/if}
                 </div>
             {/each}
@@ -150,25 +131,30 @@
         text-align: center;
     }
 
-    .white-block {
+    .white-chessboard-block {
         background: #fff;
     }
 
-    .black-block {
+    .black-chessboard-block {
         background: #efefef;
     }
 
     .chess-piece {
         position: relative;
-        /* height: 65%;
-        margin-top: 17.5%; */
-        height: 75%;
-        margin-top: 20%;
-        /* transform: translateY(-50%); */
-        color: #a2a2a2;
+        height: 90%;
+        margin-top: 15%;
         cursor: pointer;    
-        /* user-select: none; */
-        filter: invert(75%) sepia(14%) saturate(4%) hue-rotate(315deg) brightness(88%) contrast(75%);
+        user-select: none;
+        stroke: #313030;
+        stroke-width: .5px;
+    }
+
+    .white-chess-piece {
+        fill: #fff;
+    }
+
+    .black-chess-piece {
+        fill: #a2a2a2;
     }
 </style>
 

@@ -1,5 +1,5 @@
 <script>
-    import Nav from "$lib/Nav.svelte";
+    import Nav from "./Nav.svelte";
     import {page} from "$app/stores";
 
     $: inGame = $page.url.pathname === "/game";
