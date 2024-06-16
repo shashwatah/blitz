@@ -1,116 +1,129 @@
-<script>
-// @ts-nocheck
+<script lang="ts">
+    // types need to go in a separate file
+    // chessboard should be a writable store created using a chessboard class 
+    // chesspiece should be a readable store
 
-/*
-this code does what was expected of it, print out a chessboard, but this is hands down the worst code i have ever written 
-in my life, i do not how it does what is does, but it does get the work done. i cannout build upon it. i'll have to rewrite it 
-tomorrow.
-*/
+    // types
+    interface ChessPiece {
+        initRow: number,
+        initCol: number[]
+    }
 
-    let pieces = {
+    interface ChessPieces {
+        [name: string]: ChessPiece
+    }
+
+    interface ChessBlock {
+        loc: {
+            row: number,
+            col: number
+        },
+        piece?: string
+    }
+
+    interface ChessBlockNotation {
+        row: number,
+        col: string
+    }
+
+    type ChessBoard = ChessBlock[][];
+    
+    // data
+    const chessPieces: ChessPieces = {
         "king": {
-            svg: "./pieces/king.svg",
-            row: 1,
-            startPos: [5]
+            initRow: 1,
+            initCol: [5]    
         },
         "queen": {
-            svg: "./pieces/queen.svg",
-            row: 1,
-            startPos: [4]
+            initRow: 1,
+            initCol: [4]
         },
         "rook": {
-            svg: "./pieces/rook.svg",
-            row: 1,
-            startPos: [1, 8] 
+            initRow: 1,
+            initCol: [1, 8] 
         },
         "knight": {
-            svg: "./pieces/knight.svg",
-            row: 1,
-            startPos: [2, 7]
+            initRow: 1,
+            initCol: [2, 7]
         },
         "bishop": {
-            svg: "./pieces/bishop.svg",
-            row: 1,
-            startPos: [3, 6]
+            initRow: 1,
+            initCol: [3, 6]
         },
         "pawn": {
-            svg: "./pieces/pawn.svg",
-            row: 2,
-            startPos: [1, 2, 3, 4, 5, 6, 7, 8]
+            initRow: 2,
+            initCol: [1, 2, 3, 4, 5, 6, 7, 8]
         }
     }
 
-    function createChessboard() {
-        let arr = [];
+    // main functions 
+    function createChessBoard(): ChessBoard {
+        let arr: ChessBlock[][] = [];
         for(let i = 0; i <= 7; i++) {  
-            let subArr = []
+            let subArr: ChessBlock[] = []
             for(let j = 0; j <= 7; j++) {
-                let block = {
-                    color: (j+i) % 2 === 0 ? 1 : 0,
-                    coord: {
-                        column: String.fromCharCode(j+97),
-                        columnN: j+1, 
-                        row: i+1
-                    }
-                };
-                subArr.push(block)
+                subArr.push({
+                    loc: {
+                        row: i,
+                        col: j
+                    },
+                })
             } 
             arr.push(subArr);
         } 
         return arr;
     }
 
-    // function rowOne()
-
-    function populateOpp(board) {
-        for(let i = 0; i <= 1; i++) {
-            for(let j = 0; j <= 7; j++) {
-                for(let piece in pieces) {
-                    if (pieces[piece].row === i+1 && pieces[piece].startPos.includes(j+1)) {
-                        board[i][j].piece = {
-                            name: piece,
-                            svg: pieces[piece].svg
-                        }
-                    }
-                }
-            }
-        }       
+    function populateChessBoard(chessBoard: ChessBoard) {
+        populatePlayer(chessBoard, false);
+        populatePlayer(chessBoard, true);
     }
 
-    function populatePlayer(board) {
-        for(let i = 7; i >= 6; i--) {
-            for(let j = 0; j <= 7; j++) {
-                for(let piece in pieces) {
-                    
-                    if (pieces[piece].row === i-(i-(8-i)) && pieces[piece].startPos.includes(j+1)) {
-                        board[i][j].piece = {
-                            name: piece,
-                            svg: pieces[piece].svg
-                        }
-                    }
-                }
+    function populatePlayer(chessBoard: ChessBoard, isOpponent: boolean) {
+        for(let name in chessPieces) {
+            let chessPiece = chessPieces[name];
+            for(let i = 0; i < chessPiece.initCol.length; i++) {
+                let row = isOpponent ? Math.abs(chessPiece.initRow-8) : chessPiece.initRow-1;
+                chessBoard[row][chessPiece.initCol[i]-1].piece = name;
             }
-        }    
-    }
-
-    function populateChessboad(board) {
-        populateOpp(board);
-        populatePlayer(board);
+        }
     }
     
-    let chessboard = createChessboard();
-    populateChessboad(chessboard);
+    // aux functions 
+    function getBlockColor(chessBlock: ChessBlock): string {
+        if ((chessBlock.loc.row + chessBlock.loc.col) % 2 === 0) {
+            console.log("white");
+            return "white";
+        } else {
+            console.log("black");
+            return "black";
+        }
+    }
+
+    function getBlockNotation(chessBlock: ChessBlock): ChessBlockNotation{
+        return {
+            row: chessBlock.loc.row,
+            col: String.fromCharCode(chessBlock.loc.col+97)
+        };
+    }
+
+    // need to find a better way to deal with the "?"
+    function getPieceSvgLoc(pieceName?: string): string {
+        return `./pieces/${pieceName}.svg`;
+    }
+
+    let chessBoard: ChessBoard = createChessBoard();
+    populateChessBoard(chessBoard);
 </script>
 
 <div id="chessboard">
-    {#each chessboard as row, i}
-        <div class="chessrow">
+    {#each chessBoard as row}
+        <div class="chessboard-row">
             {#each row as block}
-                <div class="chessblock {block.color === 0 ? "black" : "white"}">
+                <div class="chessboard-block {getBlockColor(block)}-block">
                     {#if "piece" in block}
-                        <img alt="{block.piece.name}" src="{block.piece.svg}" draggable="false"/>
+                        <img alt="{block.piece}" src="{getPieceSvgLoc(block.piece)}" class="chess-piece" draggable="false"/>
                     {/if}
-                    <!-- {block.coord.column + block.coord.row} -->
                 </div>
             {/each}
         </div>
@@ -124,28 +137,28 @@ tomorrow.
         width: 100%;
     }
     
-    .chessrow {
+    .chessboard-row {
         height: 12.5%;
         width: 100%;
         display: flex;
         flex-direction: row;
     }
 
-    .chessblock {
+    .chessboard-block {
         height: 100%;
         width: 12.5%;
         text-align: center;
     }
 
-    .white {
+    .white-block {
         background: #fff;
     }
 
-    .black {
+    .black-block {
         background: #efefef;
     }
 
-    img {
+    .chess-piece {
         position: relative;
         /* height: 65%;
         margin-top: 17.5%; */
