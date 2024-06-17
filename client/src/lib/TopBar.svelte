@@ -4,7 +4,7 @@
 
     $: inGame = $page.url.pathname === "/game";
 </script>
-
+ 
 <div id="topbar" class="{inGame ? "in-game" : "not-in-game"}">
     <a href="{inGame ? "/" : "/game"}"><img id="logo" src="./logo.svg" alt="blitz logo" draggable="false"/></a>
     <Nav {inGame}/>
@@ -35,6 +35,5 @@
         height: 22.5px;
         float: left;
         margin-top: 10.5px;
-        user-select: none;
     }
 </style>

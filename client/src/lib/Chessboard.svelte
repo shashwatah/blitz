@@ -9,7 +9,7 @@
 
     //data
     import { chessPieces } from "./data";
-    const playerColor = "white";
+    const playerColor: string = "white";
 
     // types
     interface ChessBlock {
@@ -57,7 +57,7 @@
         for(let name in chessPieces) {
             let chessPiece = chessPieces[name];
             for(let i = 0; i < chessPiece.initCol.length; i++) {
-                let row = isOpponent ? Math.abs(chessPiece.initRow-8) : chessPiece.initRow-1;
+                let row = isOpponent ? chessPiece.initRow-1 : Math.abs(chessPiece.initRow-8) ;
                 chessBoard[row][chessPiece.initCol[i]-1].piece = {
                     name,
                     isOpponent
@@ -144,9 +144,8 @@
         height: 90%;
         margin-top: 15%;
         cursor: pointer;    
-        user-select: none;
         stroke: #313030;
-        stroke-width: .5px;
+        stroke-width: .4px;
     }
 
     .white-chess-piece {
