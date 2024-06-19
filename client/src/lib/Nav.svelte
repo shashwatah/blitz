@@ -9,7 +9,7 @@
     {:else}
         <button class="nav-btn sec-btn" id="about-btn">about</button>
         <button class="nav-btn sec-btn" id="rules-btn">rules</button>
-        <button class="nav-btn" id="acc-btn">sign in</button>
+        <a href="/auth"><button class="nav-btn" id="acc-btn">login</button></a>
     {/if}
 </div>
 
@@ -58,7 +58,7 @@
 
     #acc-btn:hover {
         transition: .1s linear;
-        color: #efefef;
+        color: #fff;
         background: #313030;
     }
 </style>

@@ -6,7 +6,7 @@
 </script>
  
 <div id="topbar" class="{inGame ? "in-game" : "not-in-game"}">
-    <a href="{inGame ? "/" : "/game"}"><img id="logo" src="./logo.svg" alt="blitz logo" draggable="false"/></a>
+    <a href="{$page.url.pathname !== "/" ? "/" : ""}"><img id="logo" src="./logo.svg" alt="blitz logo" draggable="false"/></a>
     <Nav {inGame}/>
 </div>
 
