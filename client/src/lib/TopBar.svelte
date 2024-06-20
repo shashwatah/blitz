@@ -1,39 +1,78 @@
 <script>
-    import Nav from "./Nav.svelte";
-    import {page} from "$app/stores";
-
-    $: inGame = $page.url.pathname === "/game";
+    export let onHomePage;
+    export let onGamePage;
 </script>
- 
-<div id="topbar" class="{inGame ? "in-game" : "not-in-game"}">
-    <a href="{$page.url.pathname !== "/" ? "/" : ""}"><img id="logo" src="./logo.svg" alt="blitz logo" draggable="false"/></a>
-    <Nav {inGame}/>
+
+<!-- hinding secondary buttons (about & rules) for now.
+     need to decide what to do with the pages. -->
+
+<div id="topbar">
+    <a href="{!onHomePage ? "/" : ""}"><img alt="Blitz Logo" id="logo" src="./logo.svg" draggable="false"/></a>
+
+    <div id="navigation">
+        {#if onGamePage}
+            <button id="col-btn" class="nav-btn"></button>
+        {:else}
+            <!-- <button class="nav-btn sec-btn" id="about-btn">about</button>
+            <button class="nav-btn sec-btn" id="rules-btn">rules</button> -->
+            <a href="/auth"><button id="acc-btn" class="nav-btn">login</button></a>
+        {/if}
+    </div>
 </div>
 
-<!-- need to move the positioning and width styles out of this file into layout, or do the opposite with chessboard -->
 <style>
-    #topbar {
-        background: none;
-        position: fixed;
-        margin-left: 50%;
-        transform: translateX(-50%);
-        height: 42.5px;
-    }
-
-    .not-in-game {
-        top: 65px;
-        width: 70%;
-    }
-
-    .in-game {
-        top: 20px;
-        width: 90%;
-    }
-
     #logo {
         position: relative;
         height: 22.5px;
         float: left;
         margin-top: 10.5px;
+    }
+
+    #navigation {
+        position: relative;
+        float: right;
+    }
+
+    .nav-btn {
+        height: 42.5px;
+        font-family: "Roboto Mono", sans-serif;
+        font-size: 15px;
+        color: #313030;
+        border: none;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    #col-btn {
+        width: 42.5px;
+        background: #efefef;
+    }
+
+    #col-btn:hover {
+        transition: .1s linear;
+        background: #313030;
+    }
+
+    /* .sec-btn {
+        width: auto;
+        margin-right: 30px;
+        background: none;
+    }
+
+    .sec-btn:hover {
+        transition: .1s linear;
+        font-weight: 500;
+        color: #000;
+    } */
+
+    #acc-btn {
+        width: 130px;
+        background: #efefef;
+    }
+
+    #acc-btn:hover {
+        transition: .1s linear;
+        color: #fff;
+        background: #313030;
     }
 </style>

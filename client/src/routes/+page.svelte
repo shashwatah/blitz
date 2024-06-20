@@ -2,52 +2,49 @@
     import Chessboard from "$lib/Chessboard.svelte";
 </script>
 
-<div id="board-container">
+<div id="game-btn-container">
+    <a href="/game"><button class="game-btn" id="pub-game-btn">public game</button></a>
+    <button class="game-btn" id="pvt-game-btn">private game</button>
+</div>
+
+<div id="chessboard-container">
     <Chessboard/>
 </div>
 
-<div id="action-btn-container">
-    <a href="/game"><button class="action-btn" id="pub-game-btn">public game</button></a>
-    <button class="action-btn" id="pvt-game-btn">private game</button>
-</div>
-
 <style>
-    #board-container {
+    #chessboard-container {
         height: 60vw;
         width: 60vw;
         position: fixed;
         margin-left: 50%;
         transform: translateX(-50%);
-        top: 660px;
-        z-index: 2;
+        top: 660px; /**/
     }
 
-    #action-btn-container {
-        display: inlline;
-        background: none;
-        position: fixed;
-        margin-left: 50%;
-        margin-top: 23%;
-        transform: translate(-50%, -25%);
+    #game-btn-container {
         height: 50px;
-        width: 40%;
-    }
+        width: 40%; /**/
+        position: fixed;
+        top: calc(50% - 40px); /**/
+        margin-left: 50%;
+        transform: translateX(-50%);
+        display: inline-block;
+    }   
 
-    .action-btn {
+    .game-btn {
         height: 100%;
         width: 48%;
         background: #fff;
+        border: 1.5px solid #d3d2d2;
         color: #313030;
         font-family: "Roboto Mono", sans-serif;
         font-size: 17px;
-        border: 1.5px solid #d3d2d2;
         cursor: pointer;
     }
 
-    /* need to find a better hover effect for these buttons */
-    .action-btn:hover {
-        transition: .2s linear;
-        border: 4px solid #d3d2d2;
+    /* find better hover effect for these buttons - maybe?*/
+    .game-btn:hover {
+        border: 2px solid #d3d2d2;
     }
 
     #pub-game-btn {

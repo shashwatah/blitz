@@ -14,8 +14,8 @@
 </script>
 
 <div id="auth-container">
-    <label for="email-input">username</label>
-    <input type="text" class="auth-input" id="usern-input"/>
+    <label for="email-input">email</label>
+    <input type="email" class="auth-input" id="email-input"/>
     <label for="pass-input">password</label>
     <input type="password" class="auth-input" id="pass-input"/>
 
@@ -57,7 +57,7 @@
         outline: none;
     }
 
-    #usern-input {
+    #email-input {
         margin-bottom: 45px;
     }
 
@@ -96,6 +96,6 @@
         background: #fff;
         border: 2px solid #efefef;
         color: #000;
-        transition: .1s linear;
-    }
+        transition: .1s ease-in;
+}
 </style>
