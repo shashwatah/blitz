@@ -1,122 +1,150 @@
 <script lang="ts">
-    // ugly, janky code that works
-    // needs major refactoring
+    // still not perfect but better than yesterday
+    // classes and vars are still too verbose and confusing
     // should be ready to accept backend data
-    // move game setup to a separate component
-    // change names for divs and vars, cleanup css
-    // clean up or change the page change mechanism and if expressions
+    // can make components out of game setup (and smaller divs like cancel-btn?)
+    // common classes:  container-type-1, choice-btn, square-btn
 
     import { goto } from "$app/navigation";
     import Chessboard from "$lib/Chessboard.svelte";
 
     enum GameMode {
-        Private,
-        Public
+        None,
+        Public,
+        Private
     }
 
-    enum PrivateGameChoice {
+    enum PrivateGameMode {
         None,
-        JoinRoom,
-        CreateRoom
+        JoinGame,
+        CreateGame
     }
 
     enum GameSetupPage {
-        Main,
-        Settings,
+        ModeSelection,
+        PrivateGameSetup,
         Loading
     }
 
-    let selectedMode: GameMode;
-    let selectedPGChoice: PrivateGameChoice = PrivateGameChoice.None;
-    let currentPage: GameSetupPage = GameSetupPage.Main;
-    let lastPage: GameSetupPage;
-    let loadingTimeoutID: number = 0;
+    let selectedGameMode: GameMode;
+    let selectedPGMode: PrivateGameMode;
+    let currentGSPage: GameSetupPage = GameSetupPage.ModeSelection;
+    let loaderTimeoutID: number = 0;
+    let loaderMessage: string = "setting up game..."; // need to change how this works later
 
-    let loadingMessage = "setting up game...";
+    let chessboardClass: string = "chessboard-down";
 
-    function gotoPage(page: GameSetupPage) {
-        lastPage = currentPage;
-        currentPage = page
+    function gotoGSPage(page: GameSetupPage) {
+        currentGSPage = page;
+        chessboardClass = page === GameSetupPage.ModeSelection ? "chessboard-down" : "chessboard-up";
+    }
+
+    function gotoModeSelectionPage() {
+        gotoGSPage(GameSetupPage.ModeSelection);
     }
 
     function selectGameMode(mode: GameMode) {
-        selectedMode = mode;
+        selectedGameMode = mode;
         if (mode === GameMode.Public) {
             loadGame();
         } else {
-            gotoPage(GameSetupPage.Settings)
+            setupPrivateGame();
         }
     }
 
-    function selectRoomChoice(choice: PrivateGameChoice) {
-        selectedPGChoice = choice;
+    function cancelGameModeSelection() {
+        selectedGameMode = GameMode.None;
+        gotoModeSelectionPage();
     }
 
-    function cancelChoice() {
-        selectedPGChoice = PrivateGameChoice.None;
-        gotoPage(lastPage)
+    function setupPrivateGame() {
+        selectedPGMode = PrivateGameMode.None;
+        gotoGSPage(GameSetupPage.PrivateGameSetup);
+    }
+
+    function selectPGMode(pgMode: PrivateGameMode) {
+        selectedPGMode = pgMode;
+    }
+
+    function cancelPGModeSelection() {
+        selectedPGMode = PrivateGameMode.None;
     }
 
     function loadGame() {
-        gotoPage(GameSetupPage.Loading);
-        loadingTimeoutID = setTimeout(() => {goto("/game")}, 3000);
+        gotoGSPage(GameSetupPage.Loading);
+        loaderTimeoutID = setTimeout(() => {goto("/game")}, 3000);
     }
 
-    function cancelLoad() {
-        if (loadingTimeoutID !== 0) {
-            clearTimeout(loadingTimeoutID);
-            loadingTimeoutID = 0;
+    function cancelGameLoad() {
+        if (loaderTimeoutID > 0) {
+            clearTimeout(loaderTimeoutID);
+            loaderTimeoutID = 0;
         }
-        gotoPage(lastPage);
+
+        cancelPGModeSelection();
+        cancelGameModeSelection();
     }
+
+    console.log
 </script>
 
-
 <div id="game-setup-container">
-    {#if currentPage === GameSetupPage.Settings && selectedMode === GameMode.Private && selectedPGChoice === PrivateGameChoice.JoinRoom}
-        <button class="cancel-back-btn" on:click="{cancelChoice}">X</button>
-        <input type="text" placeholder="room code"/>
-        <button on:click={loadGame}>enter room</button>
-    {:else if currentPage === GameSetupPage.Settings && selectedMode === GameMode.Private && selectedPGChoice === PrivateGameChoice.CreateRoom}
-        <button class="cancel-back-btn" on:click="{cancelChoice}">X</button>
-        <button>que-ere-fdq</button>
-        <button>join</button>
-        <button>player has joined!</button>
-        <button on:click={loadGame}>start game</button> 
-    {:else if currentPage === GameSetupPage.Settings && selectedMode === GameMode.Private && selectedPGChoice === PrivateGameChoice.None} 
-        <div id="private-room-choice-container" class="center-container-type-1">
-            <button class="cancel-back-btn" on:click="{cancelChoice}">X</button>
-            <div id="private-room-choice-sub-container">
-                <button id="join-room-btn" class="game-mode-btn choice-btn"
-                    on:click={() => {selectRoomChoice(PrivateGameChoice.JoinRoom)}}>
-                    join room
-                </button>
-                <button id="create-room-btn" class="game-mode-btn choice-btn"
-                    on:click={() => {selectRoomChoice(PrivateGameChoice.CreateRoom)}}>
-                    create game
-                </button>
-            </div>
-        </div>
-    {:else if currentPage === GameSetupPage.Main} 
-        <div id="game-mode-select-container" class="center-container-type-1">
-            <button id="pub-game-btn" class="game-mode-btn choice-btn"
+    {#if currentGSPage === GameSetupPage.ModeSelection}
+        <div id="game-mode-selection-container" class="container-type-1">
+            <button id="public-game-btn" class="game-mode-selection-btn choice-btn"
                 on:click="{() => {selectGameMode(GameMode.Public)}}">
                 public game
             </button>
-            <button id="pvt-game-btn" class="game-mode-btn choice-btn"
+            <button id="private-game-btn" class="game-mode-selection-btn choice-btn"
                 on:click="{() => {selectGameMode(GameMode.Private)}}">
                 private game
-            </button>
+            </button>       
         </div>
-    {:else} 
-        <div id="game-loading-container" class="center-container-type-1">
-            <button class="cancel-back-btn" on:click="{cancelLoad}">X</button>
-            <button id="game-loading-msg">{loadingMessage}</button> 
+    {:else if currentGSPage === GameSetupPage.Loading}
+        <div id="game-loader-container" class="container-type-1">
+            <button id="game-loader-cancel-btn" class="square-btn" on:click={cancelGameLoad}>X</button>
+            <button id="game-loader-msg">{loaderMessage}</button> 
         </div>
+    {:else if currentGSPage === GameSetupPage.PrivateGameSetup} 
+        {#if selectedPGMode === PrivateGameMode.None}
+            <div id="pg-mode-selection-container" class="container-type-1">
+                <button id="pg-mode-back-btn" class="square-btn" on:click={cancelGameModeSelection}>X</button>
+                <div id="pg-mode-selection-sub-container" class="container-type-2">
+                    <button id="join-game-btn" class="pg-mode-selection-btn choice-btn"
+                        on:click={() => {selectPGMode(PrivateGameMode.JoinGame)}}>
+                        join game
+                    </button>
+                    <button id="create-game-btn" class="pg-mode-selection-btn choice-btn"
+                        on:click={() => {selectPGMode(PrivateGameMode.CreateGame)}}>
+                        create game
+                    </button>    
+                </div>
+            </div>
+        {:else if selectedPGMode === PrivateGameMode.JoinGame}
+            <div id="pg-join-game-container" class="container-type-1">
+                <button id="pg-join-game-back-btn" class="square-btn" on:click={cancelGameLoad}>X</button>
+                <div id="pg-join-game-sub-container" class="container-type-2">
+                    <input id="pg-join-game-code-input" class="choice-btn" type="text" placeholder="game code" maxlength="6"/>
+                    <button id="pg-join-game-join-btn" class="choice-btn" on:click={loadGame}>join game</button>
+                </div>
+            </div>
+        {:else}
+            <div id="pg-create-game-container">
+                <div id="pg-cg-top-container">
+                    <button class="square-btn" on:click={gotoModeSelectionPage}>X</button>
+                    <button>que-ere-fdq</button>
+                    <button>copy</button>
+                </div>       
+                <div id="pg-cg-bot-container">
+                    <button>player has joined!</button>
+                    <button on:click={loadGame}>start game</button>
+                </div>
+            </div>       
+        {/if}
     {/if}
 </div>
 
-<div id="chessboard-container">
+<div id="chessboard-container" class="{chessboardClass}">
     <Chessboard/>
 </div>
 
@@ -128,10 +156,9 @@
         top: calc(50% - 110px); /**/
         margin-left: 50%;
         transform: translateX(-50%);
-        /* border: 1px solid black;  */
     }
 
-    .center-container-type-1 {
+    .container-type-1 {
         height: 50px;
         width: 80%;
         position: relative;
@@ -144,15 +171,15 @@
         height: 100%;
         width: 48%;
         background: #fff;
-        border: 1.5px solid #d3d2d2;
         color: #313030;
+        border: 1.5px solid #d3d2d2;
         font-family: "Roboto Mono", sans-serif;
         font-size: 17px;
         cursor: pointer;
     }
 
     /* find better hover effect for these buttons - maybe?*/
-    .choice-btn:hover {
+    button.choice-btn:hover {
         border: 2px solid #d3d2d2;
     }
 
@@ -164,13 +191,13 @@
         float: right;
     }
 
-    #private-room-choice-sub-container {
+    .container-type-2 {
         height: 100%;
         width: calc(100% - 70px);
         float: right;
     }
 
-    .cancel-back-btn {
+    .square-btn {
         height: 100%;
         width: 50px;
         background: #fff;
@@ -183,11 +210,21 @@
         float: left;
     }
 
-    .cancel-back-btn:hover {
+    #pg-join-game-code-input {
+        height: calc(100% - 3px);
+        text-align: center;
+        user-select: none;
+    }
+
+    #pg-join-game-code-input::placeholder {
+        color: lightgray;
+    }
+
+    .square-btn:hover {
         border: 2px solid #d3d2d2;
     }
 
-    #game-loading-msg {
+    #game-loader-msg {
         height: 100%;
         width: calc(100% - 70px);
         background: #efefee;
@@ -204,6 +241,14 @@
         position: fixed;
         margin-left: 50%;
         transform: translateX(-50%);
-        top: 660px; /**/
+        transition: 0.1s linear;
+    }
+
+    .chessboard-down {
+        bottom: -52.5vw;
+    }
+
+    .chessboard-up {
+        bottom: -45vw;
     }
 </style>
