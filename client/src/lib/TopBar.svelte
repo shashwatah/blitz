@@ -3,7 +3,7 @@
     export let onGamePage;
 </script>
 
-<!-- hinding secondary buttons (about & rules) for now.
+<!-- hiding secondary buttons (about & rules) for now.
      need to decide what to do with the pages. -->
 
 <div id="topbar">

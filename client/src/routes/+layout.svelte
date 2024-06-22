@@ -1,7 +1,6 @@
 <script>
+    import { page } from "$app/stores";
     import TopBar from "$lib/TopBar.svelte";
-    import {page} from "$app/stores";
-
     
     $: onHomePage = $page.url.pathname === "/";
     $: onGamePage = $page.url.pathname === "/game";
@@ -19,6 +18,7 @@
         position: fixed;
         margin-left: 50%;
         transform: translateX(-50%);
+        transition: 0.2s linear;
     }
     
     .in-game {

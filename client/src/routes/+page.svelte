@@ -4,6 +4,7 @@
     // should be ready to accept backend data
     // can make components out of game setup (and smaller divs like cancel-btn?)
     // common classes:  container-type-1, choice-btn, square-btn
+    // refactor required
 
     import { goto } from "$app/navigation";
     import Chessboard from "$lib/Chessboard.svelte";
@@ -130,16 +131,16 @@
             </div>
         {:else}
             <div id="pg-create-game-container">
-                <div id="pg-cg-top-container">
-                    <button class="square-btn" on:click={gotoModeSelectionPage}>X</button>
-                    <button>que-ere-fdq</button>
-                    <button>copy</button>
+                <div id="pg-cg-top-container" class="pg-create-container">
+                    <button id="pg-cg-cancel-btn" class="square-btn" on:click={gotoModeSelectionPage}>X</button>
+                    <button id="code" disabled>que-ere-fdq</button>
+                    <button id="copy-btn">copy</button>
                 </div>       
-                <div id="pg-cg-bot-container">
-                    <button>player has joined!</button>
-                    <button on:click={loadGame}>start game</button>
+                <div id="pg-cg-bot-container" class="pg-create-container">
+                    <button id="pg-cg-msg">player has joined!</button>
+                    <button id="pg-cg-start-btn" on:click={loadGame}>start game</button>
                 </div>
-            </div>       
+            </div>   
         {/if}
     {/if}
 </div>
@@ -156,6 +157,7 @@
         top: calc(50% - 110px); /**/
         margin-left: 50%;
         transform: translateX(-50%);
+        /* border: 1px solid black; */
     }
 
     .container-type-1 {
@@ -233,6 +235,77 @@
         float: right;
         font-size: 17px;
         font-family: "Roboto Mono", sans-serif;
+    }
+
+    #pg-create-game-container {
+        height: 125px;
+        width: 90%;
+        position: relative;
+        /* top: calc(50% - 62.5px);  */
+        /* border: 1px solid blue; */
+        margin-left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .pg-create-container {
+        height: 50px;
+        width: 100%;
+        /* border: 1px solid green; */
+    }
+
+    .pg-create-container:nth-child(1) {
+        margin-bottom: 25px;
+    }
+
+    #code {
+        height: 100%;
+        width: calc(100% - 195px);
+        font-family: "Roboto Mono", sans-serif;
+        font-size: 17px;
+        font-weight: 400;
+        color: #D1D1D1;
+        background: #EFEFEF;
+        border: none;
+        margin-left: 20px;
+    }
+
+    #copy-btn {
+        height: 100%;
+        width: 120px;
+        float: right;
+        font-family: "Roboto Mono", sans-serif;
+        font-size: 17px;
+        /* font-weight: bold; */
+        background: none;
+        color: #D1D1D1;
+        border: none;
+    }
+
+    #pg-cg-msg {
+        height: 100%;
+        width: calc(100% - 270px);
+        background: #efefee;
+        color: #A2A2A2;
+        border: none;
+        float: left;
+        font-size: 17px;
+        font-family: "Roboto Mono", sans-serif;
+    }
+
+    #pg-cg-start-btn {
+        height: 100%;
+        width: 250px;
+        float: right;
+        font-family: "Roboto Mono", sans-serif;
+        font-size: 17px;
+        background: #fff;
+        color: #313030;
+        border: 1.5px solid #d3d2d2;
+        cursor: pointer;
+    }
+
+    #pg-cg-start-btn:hover {
+        border: 2px solid #d3d2d2;
     }
 
     #chessboard-container {

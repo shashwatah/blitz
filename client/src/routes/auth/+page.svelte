@@ -53,10 +53,6 @@
         user-select: none;
     }
 
-    .auth-input:focus {
-        outline: none;
-    }
-
     #email-input {
         margin-bottom: 45px;
     }
@@ -97,5 +93,5 @@
         border: 2px solid #efefef;
         color: #000;
         transition: .1s ease-in;
-}
+    }
 </style>

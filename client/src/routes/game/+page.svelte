@@ -5,7 +5,7 @@
 
     setTimeout(() => {
         chessboardClass = "chessboard-up";
-    }, 250);
+    }, 0);
 </script>
 
 <div id="chessboard-container" class="{chessboardClass}">
