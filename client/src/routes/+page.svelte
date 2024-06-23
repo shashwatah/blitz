@@ -1,10 +1,8 @@
 <script lang="ts">
-    // still not perfect but better than yesterday
-    // classes and vars are still too verbose and confusing
-    // should be ready to accept backend data
-    // can make components out of game setup (and smaller divs like cancel-btn?)
-    // common classes:  container-type-1, choice-btn, square-btn
-    // refactor required
+    // refactored. 
+    // vars and classes are not verbose anymore but might be confusing
+    // might make a legend later, good luck future me
+    // make game setup a component
 
     import { goto } from "$app/navigation";
     import Chessboard from "$lib/Chessboard.svelte";
@@ -17,8 +15,8 @@
 
     enum PrivateGameMode {
         None,
-        JoinGame,
-        CreateGame
+        Join,
+        Create
     }
 
     enum GameSetupPage {
@@ -27,52 +25,48 @@
         Loading
     }
 
-    let selectedGameMode: GameMode;
-    let selectedPGMode: PrivateGameMode;
-    let currentGSPage: GameSetupPage = GameSetupPage.ModeSelection;
+    let chessboardPos: string = "default"; // default, pulled, pushed, center 
+
+    let selectedGM: GameMode = GameMode.None;
+    let selectedPGM: PrivateGameMode = PrivateGameMode.None;
+    let currentGSP: GameSetupPage = GameSetupPage.ModeSelection;
+    
+    // this will get removed later
     let loaderTimeoutID: number = 0;
-    let loaderMessage: string = "setting up game..."; // need to change how this works later
 
-    let chessboardClass: string = "chessboard-down";
-
-    function gotoGSPage(page: GameSetupPage) {
-        currentGSPage = page;
-        chessboardClass = page === GameSetupPage.ModeSelection ? "chessboard-down" : "chessboard-up";
+    // Page Controls
+    function gotoGSP(page: GameSetupPage) {
+        currentGSP = page;
+        chessboardPos = page === GameSetupPage.ModeSelection ? "default" : "pulled";
     }
 
-    function gotoModeSelectionPage() {
-        gotoGSPage(GameSetupPage.ModeSelection);
+    function gotoMSP() { // this exists because it gets called in html too.
+        gotoGSP(GameSetupPage.ModeSelection);
     }
 
+    // Mode Selection
     function selectGameMode(mode: GameMode) {
-        selectedGameMode = mode;
-        if (mode === GameMode.Public) {
-            loadGame();
-        } else {
-            setupPrivateGame();
-        }
+        selectedGM = mode;
+        mode === GameMode.Public ? loadGame() : gotoGSP(GameSetupPage.PrivateGameSetup);
     }
 
-    function cancelGameModeSelection() {
-        selectedGameMode = GameMode.None;
-        gotoModeSelectionPage();
+    function unselectGameMode() {
+        selectedGM = GameMode.None;
+        gotoMSP();
     }
 
-    function setupPrivateGame() {
-        selectedPGMode = PrivateGameMode.None;
-        gotoGSPage(GameSetupPage.PrivateGameSetup);
+    // Private Game Setup
+    function selectPrivateGameMode(pgMode: PrivateGameMode) {
+        selectedPGM = pgMode;
     }
 
-    function selectPGMode(pgMode: PrivateGameMode) {
-        selectedPGMode = pgMode;
+    function unselectPrivateGameMode() {
+        selectedPGM = PrivateGameMode.None;
     }
 
-    function cancelPGModeSelection() {
-        selectedPGMode = PrivateGameMode.None;
-    }
-
+    // Game Load
     function loadGame() {
-        gotoGSPage(GameSetupPage.Loading);
+        gotoGSP(GameSetupPage.Loading);
         loaderTimeoutID = setTimeout(() => {goto("/game")}, 3000);
     }
 
@@ -82,74 +76,72 @@
             loaderTimeoutID = 0;
         }
 
-        cancelPGModeSelection();
-        cancelGameModeSelection();
+        unselectPrivateGameMode();
+        unselectGameMode();
     }
-
-    console.log
 </script>
 
 <div id="game-setup-container">
-    {#if currentGSPage === GameSetupPage.ModeSelection}
-        <div id="game-mode-selection-container" class="container-type-1">
-            <button id="public-game-btn" class="game-mode-selection-btn choice-btn"
+    {#if currentGSP === GameSetupPage.ModeSelection}
+        <div id="gm-sel-container" class="sr-container">
+            <button id="public-gm-sel-btn" class="gm-sel-btn std-btn f-left ft-roboto"
                 on:click="{() => {selectGameMode(GameMode.Public)}}">
                 public game
             </button>
-            <button id="private-game-btn" class="game-mode-selection-btn choice-btn"
+            <button id="private-gm-sel-btn" class="gm-sel-btn std-btn f-right ft-roboto"
                 on:click="{() => {selectGameMode(GameMode.Private)}}">
                 private game
             </button>       
         </div>
-    {:else if currentGSPage === GameSetupPage.Loading}
-        <div id="game-loader-container" class="container-type-1">
-            <button id="game-loader-cancel-btn" class="square-btn" on:click={cancelGameLoad}>X</button>
-            <button id="game-loader-msg">{loaderMessage}</button> 
+    {:else if currentGSP === GameSetupPage.Loading}
+        <div id="gl-container" class="sr-container">
+            <button id="gl-cancel-btn" class="std-btn cancel-btn f-left" on:click={cancelGameLoad}>X</button>
+            <button id="gl-msg" class="msg-box f-right ft-roboto">
+                loading {selectedGM === GameMode.Public ? "public" : "private"} game...
+            </button> 
         </div>
-    {:else if currentGSPage === GameSetupPage.PrivateGameSetup} 
-        {#if selectedPGMode === PrivateGameMode.None}
-            <div id="pg-mode-selection-container" class="container-type-1">
-                <button id="pg-mode-back-btn" class="square-btn" on:click={cancelGameModeSelection}>X</button>
-                <div id="pg-mode-selection-sub-container" class="container-type-2">
-                    <button id="join-game-btn" class="pg-mode-selection-btn choice-btn"
-                        on:click={() => {selectPGMode(PrivateGameMode.JoinGame)}}>
-                        join game
-                    </button>
-                    <button id="create-game-btn" class="pg-mode-selection-btn choice-btn"
-                        on:click={() => {selectPGMode(PrivateGameMode.CreateGame)}}>
-                        create game
-                    </button>    
-                </div>
+    {:else if currentGSP === GameSetupPage.PrivateGameSetup && selectedGM === GameMode.Private} <!-- redundant? -->
+   
+        {#if selectedPGM === PrivateGameMode.None}
+            <div id="pgm-sel-container" class="sr-container">
+                <button id="pgm-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectGameMode}>X</button>
+                <button id="pgm-join-btn" class="pgm-sel-btn std-btn sr-wcb-el sr-wcb-el-left ft-roboto"
+                    on:click={() => {selectPrivateGameMode(PrivateGameMode.Join)}}>
+                    join game
+                </button>
+                <button id="pgm-create-btn" class="pgm-sel-btn std-btn sr-wcb-el sr-wcb-el-right ft-roboto"
+                    on:click={() => {selectPrivateGameMode(PrivateGameMode.Create)}}>
+                    create game
+                </button>
             </div>
-        {:else if selectedPGMode === PrivateGameMode.JoinGame}
-            <div id="pg-join-game-container" class="container-type-1">
-                <button id="pg-join-game-back-btn" class="square-btn" on:click={cancelGameLoad}>X</button>
-                <div id="pg-join-game-sub-container" class="container-type-2">
-                    <input id="pg-join-game-code-input" class="choice-btn" type="text" placeholder="game code" maxlength="6"/>
-                    <button id="pg-join-game-join-btn" class="choice-btn" on:click={loadGame}>join game</button>
-                </div>
+        {:else if selectedPGM === PrivateGameMode.Join}
+            <div id="pgm-join-container" class="sr-container">
+                <button id="pgmj-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectGameMode}>X</button>
+                <input id="pgmj-code-input" class="sr-wcb-el sr-wcb-el-left ft-roboto" type="text" placeholder="game code" maxlength="6"/>
+                <button id="pgmj-join-btn" class="std-btn sr-wcb-el sr-wcb-el-right ft-roboto" on:click={loadGame}>join game</button>
             </div>
         {:else}
-            <div id="pg-create-game-container">
-                <div id="pg-cg-top-container" class="pg-create-container">
-                    <button id="pg-cg-cancel-btn" class="square-btn" on:click={gotoModeSelectionPage}>X</button>
-                    <button id="code" disabled>que-ere-fdq</button>
-                    <button id="copy-btn">copy</button>
+            <div id="pgm-create-container" class="dr-container">
+                <div id="pgmc-top-container" class="dr-row-container">
+                    <button id="pgmc-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectGameMode}>X</button>
+                    <button id="pgmc-code-box" class="msg-box ft-roboto">que-ere-fdq</button>
+                    <button id="pgmc-copy-btn" class="ft-roboto">copy</button>
                 </div>       
-                <div id="pg-cg-bot-container" class="pg-create-container">
-                    <button id="pg-cg-msg">player has joined!</button>
-                    <button id="pg-cg-start-btn" on:click={loadGame}>start game</button>
+                <div id="pgmc-bot-container" class="dr-row-container">
+                    <button id="pgmc-msg-box" class="msg-box ft-roboto f-left">player has joined!</button>
+                    <button id="pgmc-start-btn" class="std-btn ft-roboto f-right" on:click={loadGame}>start game</button>
                 </div>
             </div>   
         {/if}
     {/if}
 </div>
 
-<div id="chessboard-container" class="{chessboardClass}">
+<div id="chessboard-container" class="chessboard-pos-{chessboardPos}">
     <Chessboard/>
 </div>
 
 <style>
+    /* main container */
     #game-setup-container {
         height: 175px;
         width: 50%; /**/
@@ -157,10 +149,10 @@
         top: calc(50% - 110px); /**/
         margin-left: 50%;
         transform: translateX(-50%);
-        /* border: 1px solid black; */
     }
 
-    .container-type-1 {
+    /* standard elements */
+    .sr-container{
         height: 50px;
         width: 80%;
         position: relative;
@@ -169,143 +161,107 @@
         transform: translateX(-50%);
     }   
 
-    .choice-btn {
-        height: 100%;
-        width: 48%;
-        background: #fff;
-        color: #313030;
-        border: 1.5px solid #d3d2d2;
-        font-family: "Roboto Mono", sans-serif;
-        font-size: 17px;
-        cursor: pointer;
-    }
-
-    /* find better hover effect for these buttons - maybe?*/
-    button.choice-btn:hover {
-        border: 2px solid #d3d2d2;
-    }
-
-    .choice-btn:nth-child(1) {
-        float: left;
-    }
-
-    .choice-btn:nth-child(2) {
-        float: right;
-    }
-
-    .container-type-2 {
-        height: 100%;
-        width: calc(100% - 70px);
-        float: right;
-    }
-
-    .square-btn {
-        height: 100%;
-        width: 50px;
-        background: #fff;
-        color: #313030;
-        border: 1.5px solid #d3d2d2;
-        font-size: 17px;
-        font-family: sans-serif;
-        font-weight: bolder;
-        cursor: pointer;
-        float: left;
-    }
-
-    #pg-join-game-code-input {
-        height: calc(100% - 3px);
-        text-align: center;
-        user-select: none;
-    }
-
-    #pg-join-game-code-input::placeholder {
-        color: lightgray;
-    }
-
-    .square-btn:hover {
-        border: 2px solid #d3d2d2;
-    }
-
-    #game-loader-msg {
-        height: 100%;
-        width: calc(100% - 70px);
-        background: #efefee;
-        color: #A2A2A2;
-        border: none;
-        float: right;
-        font-size: 17px;
-        font-family: "Roboto Mono", sans-serif;
-    }
-
-    #pg-create-game-container {
+    .dr-container {
         height: 125px;
         width: 90%;
         position: relative;
         /* top: calc(50% - 62.5px);  */
-        /* border: 1px solid blue; */
         margin-left: 50%;
         transform: translateX(-50%);
     }
-
-    .pg-create-container {
+    
+    .dr-row-container {
         height: 50px;
         width: 100%;
-        /* border: 1px solid green; */
     }
 
-    .pg-create-container:nth-child(1) {
+    .dr-row-container:nth-child(1) {
         margin-bottom: 25px;
     }
 
-    #code {
+    .std-btn {
         height: 100%;
-        width: calc(100% - 195px);
-        font-family: "Roboto Mono", sans-serif;
-        font-size: 17px;
-        font-weight: 400;
-        color: #D1D1D1;
-        background: #EFEFEF;
-        border: none;
-        margin-left: 20px;
-    }
-
-    #copy-btn {
-        height: 100%;
-        width: 120px;
-        float: right;
-        font-family: "Roboto Mono", sans-serif;
-        font-size: 17px;
-        /* font-weight: bold; */
-        background: none;
-        color: #D1D1D1;
-        border: none;
-    }
-
-    #pg-cg-msg {
-        height: 100%;
-        width: calc(100% - 270px);
-        background: #efefee;
-        color: #A2A2A2;
-        border: none;
-        float: left;
-        font-size: 17px;
-        font-family: "Roboto Mono", sans-serif;
-    }
-
-    #pg-cg-start-btn {
-        height: 100%;
-        width: 250px;
-        float: right;
-        font-family: "Roboto Mono", sans-serif;
-        font-size: 17px;
         background: #fff;
         color: #313030;
         border: 1.5px solid #d3d2d2;
         cursor: pointer;
     }
 
-    #pg-cg-start-btn:hover {
+    /* find better hover effect for these buttons - maybe?*/
+    .std-btn:hover {
         border: 2px solid #d3d2d2;
+    }
+
+    .msg-box {
+        height: 100%;
+        background: #efefee;
+        color: #a2a2a2;
+        border: none;
+    }
+
+    /* element based classes */
+    .cancel-btn {
+        width: 50px;
+        font-family: sans-serif;
+        font-size: 18px;
+        font-weight: bolder;
+    }
+
+    .gm-sel-btn {
+        width: 48%;
+    }
+
+    .sr-wcb-el {
+        width: calc(50% - 49.5px);
+    }
+
+    .sr-wcb-el-left {
+        margin-left: 30px;
+    }
+
+    .sr-wcb-el-right {
+        margin-left: 15px;
+    }
+
+    /* elements */
+    #pgmj-code-input {
+        height: calc(100% - 3px);
+        width: calc(50% - 55.5px);
+        text-align: center;
+        background: #fff;
+        border: 1.5px solid #313030;
+        user-select: none;
+    }
+
+    #pgmj-code-input::placeholder {
+        color: #a2a2a2;
+    }
+    
+    #gl-msg {
+        width: calc(100% - 70px);
+    }
+
+    #pgmc-code-box {
+        width: calc(100% - 195px);
+        font-weight: 400;
+        color: #d1d1d1;
+        margin-left: 20px;
+    }
+
+    #pgmc-copy-btn{
+        height: 100%;
+        width: 120px;
+        background: none;
+        color: #d1d1d1;
+        border: none;
+    }
+
+    #pgmc-msg-box {
+        width: calc(100% - 270px);
+    }
+
+    #pgmc-start-btn {
+        width: 250px;
     }
 
     #chessboard-container {
@@ -317,11 +273,11 @@
         transition: 0.1s linear;
     }
 
-    .chessboard-down {
+    .chessboard-pos-default {
         bottom: -52.5vw;
     }
 
-    .chessboard-up {
+    .chessboard-pos-pulled {
         bottom: -45vw;
     }
 </style>
