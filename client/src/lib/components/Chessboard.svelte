@@ -1,5 +1,4 @@
 <script lang="ts">
-    // types need to go in a separate file
     // chessboard should be a writable store created using a chessboard class 
     // chesspieces data should be a readable store
     // rn chess pieces are being created and store within chessboard
@@ -8,28 +7,11 @@
     // |- but a major improvement, can work on top of this now. 
 
     //data
-    import { chessPieces } from "./data";
+    import { chessPieces } from "../data/chessPieces";
+    import type { ChessBlock, ChessBlockNotation, ChessBoard } from "../types/chess";
+    
     const playerColor: string = "white";
 
-    // types
-    interface ChessBlock {
-        loc: {
-            row: number,
-            col: number
-        },
-        piece?: {
-            name: string,
-            isOpponent: boolean
-        }
-    }
-
-    interface ChessBlockNotation {
-        row: number,
-        col: string
-    }
-
-    type ChessBoard = ChessBlock[][];
-    
     // main functions 
     function createChessBoard(): ChessBoard {
         let arr: ChessBlock[][] = [];

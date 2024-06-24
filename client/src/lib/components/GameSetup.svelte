@@ -3,25 +3,9 @@
     // might make a legend later, good luck future me
 
     import { createEventDispatcher } from "svelte";
+    import { GameMode, PrivateGameMode, GameSetupPage } from "../types/gameSetup"
+    
     const dispatch = createEventDispatcher();
-
-    enum GameMode {
-        None,
-        Public,
-        Private
-    }
-
-    enum PrivateGameMode {
-        None,
-        Join,
-        Create
-    }
-
-    enum GameSetupPage {
-        ModeSelection,
-        PrivateGameSetup,
-        Loading
-    }
 
     let selectedGM: GameMode = GameMode.None;
     let selectedPGM: PrivateGameMode = PrivateGameMode.None;

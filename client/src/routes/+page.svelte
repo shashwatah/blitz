@@ -1,17 +1,19 @@
-<script>
+<script lang="ts">
     import { goto } from "$app/navigation";
+    import { ChessBoardPos } from "$lib/types/chessBoard";
     
-    import Chessboard from "$lib/Chessboard.svelte";
-    import GameSetup from "$lib/GameSetup.svelte";
+    import Chessboard from "$lib/components/Chessboard.svelte";
+    import GameSetup from "$lib/components/GameSetup.svelte";
     
-    let chessboardPos = "default"; // default, pulled, pushed, center 
-
+    let chessboardPos: ChessBoardPos = ChessBoardPos.Default; // default, pulled, pushed, center 
+    
     function gotoGame() {
         goto("/game");
     }
 
+    // @ts-ignore
     function handlePageChange(event) {
-        chessboardPos = event.detail.isMS ? "default" : "pulled"; 
+        chessboardPos = event.detail.isMS ? ChessBoardPos.Default : ChessBoardPos.Pulled; 
     }
 </script>
 

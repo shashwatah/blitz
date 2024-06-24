@@ -1,14 +1,14 @@
-<script>
-    import Chessboard from "$lib/Chessboard.svelte";
+<script lang="ts">
+    import { ChessBoardPos } from "$lib/types/chessBoard";
+    import Chessboard from "$lib/components/Chessboard.svelte";
     
-    let chessboardClass = "chessboard-down";
-
+    let chessboardPos = ChessBoardPos.Pulled;
     setTimeout(() => {
-        chessboardClass = "chessboard-up";
+        chessboardPos = ChessBoardPos.Center;
     }, 0);
 </script>
 
-<div id="chessboard-container" class="{chessboardClass}">
+<div id="chessboard-container" class="chessboard-pos-{chessboardPos}">
     <Chessboard/>
 </div>
 
@@ -20,13 +20,13 @@
         transition: 0.2s linear;
     }
 
-    .chessboard-down {
+    .chessboard-pos-pulled {
         height: 60vw;
         width: 60vw;
         bottom: -45vw;
     }
 
-    .chessboard-up {
+    .chessboard-pos-center {
         height: 40vw;
         width: 40vw;
         bottom: 90px;

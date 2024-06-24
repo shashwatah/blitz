@@ -1,6 +1,6 @@
 <script>
     import { page } from "$app/stores";
-    import TopBar from "$lib/TopBar.svelte";
+    import TopBar from "$lib/components/TopBar.svelte";
     
     $: onHomePage = $page.url.pathname === "/";
     $: onGamePage = $page.url.pathname === "/game";

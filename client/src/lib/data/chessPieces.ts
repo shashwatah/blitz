@@ -1,12 +1,4 @@
-export interface ChessPiece {
-    initRow: number,
-    initCol: number[],
-    svg: string
-}
-
-interface ChessPieces {
-    [name: string]: ChessPiece
-}
+import type { ChessPieces } from "$lib/types/chessBoard"
 
 let chessPieces: ChessPieces = {
     "king": {
