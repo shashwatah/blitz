@@ -42,6 +42,7 @@
 
     function unselectPrivateGameMode() {
         selectedPGM = PrivateGameMode.None;
+        unselectGameMode();
     }
 
     // Game Load
@@ -96,14 +97,14 @@
         </div>
     {:else if selectedPGM === PrivateGameMode.Join}
         <div id="pgm-join-container" class="sr-container">
-            <button id="pgmj-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectGameMode}>X</button>
+            <button id="pgmj-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectPrivateGameMode}>X</button>
             <input id="pgmj-code-input" class="sr-wcb-el sr-wcb-el-left ft-roboto" type="text" placeholder="game code" maxlength="6"/>
             <button id="pgmj-join-btn" class="std-btn sr-wcb-el sr-wcb-el-right ft-roboto" on:click={loadGame}>join game</button>
         </div>
     {:else}
         <div id="pgm-create-container" class="dr-container">
             <div id="pgmc-top-container" class="dr-row-container">
-                <button id="pgmc-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectGameMode}>X</button>
+                <button id="pgmc-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectPrivateGameMode}>X</button>
                 <button id="pgmc-code-box" class="msg-box ft-roboto">que-ere-fdq</button>
                 <button id="pgmc-copy-btn" class="ft-roboto">copy</button>
             </div>       
