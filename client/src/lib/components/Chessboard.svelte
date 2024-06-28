@@ -8,7 +8,7 @@
 
     //data
     import { chessPieces } from "../data/chessPieces";
-    import type { ChessBlock, ChessBlockNotation, ChessBoard } from "../types/chess";
+    import type { ChessBlock, ChessBlockNotation, ChessBoard } from "../types/chessBoard";
     
     const playerColor: string = "white";
 

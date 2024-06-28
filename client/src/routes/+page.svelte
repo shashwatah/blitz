@@ -25,23 +25,45 @@
     <Chessboard/>
 </div>
 
+<div id="left" class="game-stat"></div>
+<div id="right" class="game-stat"></div>
+
 <style>
+    .game-stat {
+        height: 40vw;
+        width: 25vw;
+        position: fixed;
+        top: 50vh;
+        transform: translateY(-50%);
+        border: 1px solid black;
+    }
+
+    #left {
+        left: 0px;
+    }
+
+    #right {
+        right: 0px;
+    }
+
     /* main container */
     #game-setup-container {
         height: 175px;
-        width: 50%; /**/
+        width: 50%;  /* ? */
         position: fixed;
-        top: calc(50% - 110px); /**/
+        top: calc(50% - 110px);  /* ? */
         margin-left: 50%;
-        transform: translateX(-50%);
+        transform: translateX(-51%);  /* ? */
+        background-color: yellow;
     }
 
     #chessboard-container {
+        background-color: blue;
         height: 60vw;
         width: 60vw;
         position: fixed;
         margin-left: 50%;
-        transform: translateX(-50%);
+        transform: translateX(-51%);  /* ? */
         transition: 0.1s linear;
     }
 
