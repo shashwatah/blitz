@@ -1,27 +1,44 @@
-<script>
-    let login = true;
+<script lang="ts">
+    // where to use numbers and where to use actual values for enums is currently undecided
+    // |- this also affects other files that use enums, eg. chessboard
 
-    // @ts-ignore
-    function btnClick(event) {
-        if (!event.target.classList.contains("active")) {
-            toggleActive();
-        }
+    enum authType {
+        Login,
+        Register
     }
 
-    function toggleActive() {
-        login = login ? false : true;
+    let activeAuthType: authType = 0;
+    let onLogin: boolean = !activeAuthType;
+
+    function toggleActiveAuthType() {
+        activeAuthType = onLogin ? 1 : 0;
+        onLogin = !activeAuthType;
+    }
+
+    function authBtnClick(authBtnType: authType) {
+        if (authBtnType === activeAuthType) {
+            console.log("hit", authBtnType.valueOf());
+        } else {
+            toggleActiveAuthType();
+        }
     }
 </script>
 
-<div id="auth-container">
-    <label for="email-input">email</label>
-    <input type="email" class="auth-input" id="email-input"/>
-    <label for="pass-input">password</label>
-    <input type="password" class="auth-input" id="pass-input"/>
+<div id="auth-container" class="auth-container-{onLogin ? "log" : "reg"}">
+    {#if !onLogin}
+        <label for="uname-input" id="uname-label" class="auth-input-label">username</label>
+        <input type="text" id="uname-input" class="auth-input"/>
+    {/if}
+    <label for="email-input" id="email-label" class="auth-input-label">email</label>
+    <input type="email" id="email-input" class="auth-input"/>
+    <label for="pass-input" id="pass-label" class="auth-input-label">password</label>
+    <input type="password" id="pass-input" class="auth-input"/>
 
     <div id="auth-btn-container">
-        <button class="auth-btn {!login ? "active" : ""}" id="reg-btn" on:click={btnClick}>register</button>
-        <button class="auth-btn {login ? "active" : ""}" id="log-btn" on:click={btnClick}>login</button>
+        <button id="reg-btn" class="auth-btn f-left {!onLogin ? "auth-btn-active" : ""}"
+            on:click={() => {authBtnClick(authType.Register)}}>register</button>
+        <button id="log-btn" class="auth-btn f-right {onLogin ? "auth-btn-active" : ""}"
+            on:click={() => {authBtnClick(authType.Login)}}>login</button>
     </div>
 </div>
 
@@ -32,29 +49,38 @@
         width: 350px;
         margin-left: 50%;
         transform: translateX(-50%);
-        top: 250px;
+    }
+
+    .auth-container-log {
+        margin-top: 250px;
+    }
+
+    .auth-container-reg {
+        margin-top: 200px;
     }
 
     label {
-        font-size: 17px;
-        font-family: "Roboto Mono", sans-serif;
-        color: #a2a2a2;
         display: inline-block;
         margin-bottom: 10px;
+        color: #a2a2a2;
+        font-size: 17px;
+        font-family: "Roboto Mono", sans-serif;
     }
 
     .auth-input {
-        border: 2px solid #efefef;
+        position: relative;
         height: 50px;
         width: calc(100% - 30px);
+        margin-bottom: 40px;
+        border: 2px solid #efefef;
         font-size: 17px;
         font-family: "Roboto Mono", sans-serif;
         padding: 0px 15px;
         user-select: none;
     }
 
-    #email-input {
-        margin-bottom: 45px;
+    .auth-input:last-of-type {
+        margin-bottom: 0px;
     }
 
     #auth-btn-container {
@@ -71,27 +97,23 @@
         border: 1px solid rgba(0,0,0,0);
         font-size: 17px;
         font-family: "Roboto Mono", sans-serif;
-        color: lightgrey;
+        color: #a2a2a2;
         cursor: pointer;
     }
 
-    .auth-btn:focus {
-        outline: none;
+    .auth-btn:hover {
+        color: #313030;
     }
 
-    #reg-btn {
-        float: left;
-    }
-
-    #log-btn {
-        float: right;
-    }
-
-    .active {
+    .auth-btn-active {
         width: 140px;
         background: #fff;
         border: 2px solid #efefef;
         color: #000;
-        transition: .1s ease-in;
+        transition: .1s linear;
+    }
+
+    .auth-btn-active:hover {
+        border: 2px solid #d3d2d2;
     }
 </style>
