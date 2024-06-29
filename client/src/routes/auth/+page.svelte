@@ -1,12 +1,10 @@
 <script lang="ts">
-    // where to use numbers and where to use actual values for enums is currently undecided
-    // |- this also affects other files that use enums, eg. chessboard
-
     enum authType {
         Login,
         Register
     }
 
+    // using enum values as numbers 
     let activeAuthType: authType = 0;
     let onLogin: boolean = !activeAuthType;
 
@@ -25,12 +23,12 @@
 </script>
 
 <div id="auth-container" class="auth-container-{onLogin ? "log" : "reg"}">
+    <label for="uname-input" id="uname-label" class="auth-input-label">username</label>
+    <input type="text" id="uname-input" class="auth-input"/>
     {#if !onLogin}
-        <label for="uname-input" id="uname-label" class="auth-input-label">username</label>
-        <input type="text" id="uname-input" class="auth-input"/>
+        <label for="email-input" id="email-label" class="auth-input-label">email</label>
+        <input type="email" id="email-input" class="auth-input"/>
     {/if}
-    <label for="email-input" id="email-label" class="auth-input-label">email</label>
-    <input type="email" id="email-input" class="auth-input"/>
     <label for="pass-input" id="pass-label" class="auth-input-label">password</label>
     <input type="password" id="pass-input" class="auth-input"/>
 
