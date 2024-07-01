@@ -1,8 +1,14 @@
 <script lang="ts">
+    // really janky code, works in the browser though.
+    // worst part: player info 
+    // major refactor needed
+
     import { fade } from "svelte/transition";
 
     import { ChessBoardPos } from "$lib/types/chessBoard";
     import Chessboard from "$lib/components/Chessboard.svelte";
+
+    import { chessPieces } from "$lib/data/chessPieces";
 
     let currentChessboardPos = ChessBoardPos.Pulled;
     let chessboardRendered = false;
@@ -27,7 +33,49 @@
     </div>
 
     <div id="right-aux-container" class="aux-container" transition:fade={{ delay: 400, duration: 100 }}>
+        <div id="opp-container" class="player-container">
+            <button class="timer" disabled>2:55</button>
+            <div id="opp-info-container" class="player-info-container">
+                <div id="opp-name-container" class="player-info-element player-name-container">
+                    <p id="opp-name" class="player-name">opponent</p>
+                </div>
+                <div id="opp-cp-container" class="player-info-element player-cp-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" class="chess-piece wcp cr-el">
+                        {@html chessPieces["bishop"].svg}
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" class="chess-piece wcp cr-el">
+                        {@html chessPieces["bishop"].svg}
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" class="chess-piece wcp cr-el">
+                        {@html chessPieces["bishop"].svg}
+                    </svg>
+                    <!-- <p class="chess-end cr-el">+1</p> -->
+                     +1
+                </div>
+            </div>
+        </div>
         <div id="move-board"></div>
+        <div id="user-container" class="player-container">
+            <button class="timer disabled" disabled>2:55</button>
+            <div id="user-info-container" class="player-info-container">
+                <div id="user-cp-container" class="player-info-element player-cp-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" class="chess-piece bcp cr-el">
+                        {@html chessPieces["bishop"].svg}
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" class="chess-piece bcp cr-el">
+                        {@html chessPieces["bishop"].svg}
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" class="chess-piece bcp cr-el">
+                        {@html chessPieces["bishop"].svg}
+                    </svg>
+                    <!-- <p class="chess-end cr-el">+1</p> -->
+                    +1
+                </div>
+                <div id="user-name-container" class="player-info-element player-name-container">
+                    <p id="user-name" class="player-name">opponent</p>
+                </div>
+            </div>
+        </div>
     </div>
 {/if}
 
@@ -43,7 +91,6 @@
         width: 20vw;
         top: 50vh;
         transform: translateY(-50%);
-        /* border: 1px solid black; */
     }
 
     #left-aux-container {
@@ -127,15 +174,122 @@
 
     #move-board {
         position: relative;
-        height: 20vw;
+        height: 18vw;
         width: 100%;
         top: 50%;
         transform: translateY(-50%);
-        border: 1px solid #d1d1d1;
-        background: #fff;
+        background: #efefef;
     } 
+
+    .player-container {
+        position: fixed;
+        height: 55px;
+        width: 100%;
+    }
     
+    #opp-container {
+        top: 0px;
+    }
     
+    #user-container {
+        bottom: 0px;
+    }
+
+    .timer {
+        height: 100%;
+        width: 120px;
+        background: #efefef;
+        float: left;
+        font-family: "Space Mono", sans-serif;
+        font-weight: bold;
+        font-size: 30px;
+        color: #313131;
+        border: none;
+    }
+
+    .timer.disabled {
+        color: #a2a2a2;
+    }
+
+    .player-info-container {
+        height: 100%;
+        width: 175px;
+        float: right;
+        /* margin-right: 0px; */
+    }
+
+    .player-info-element {
+        background: 1px solid blue;
+        float: right;
+    }
+
+    .player-name-container {
+        height: 35%;
+        width: 175px;
+    }
+
+    /* why does this work??!! */
+    .player-name {
+        line-height: 0px;
+        margin-top: 7px;
+        float: right;
+        font-family: "Space Mono", sans-serif;
+        font-size: 18px;
+    }
+
+    #opp-name {
+        color: #313131;
+    }
+
+    #user-name {
+        color: #a2a2a2;
+    }
+
+    .player-cp-container {
+        height: 35px;
+        font-family: "Space Mono", sans-serif;
+        font-size: 17px;
+        /* border: 1px solid black; */
+        margin-right: -2px;
+        color: #a2a2a2;
+    }
+
+    #opp-cp-container {
+        margin-top: 7px;
+    }
+
+    .chess-piece {
+        margin: 0px;
+        position: relative;
+        height: 35px;
+        vertical-align: middle;
+        display: inline-block;
+        margin-right: -30px;
+        stroke: #313030;
+        stroke-width: .6px;
+    }
+
+    .chess-piece:nth-of-type(1) {
+        z-index: 2;
+    }
+
+    .chess-piece:nth-of-type(2) {
+        z-index: 1;
+    }
+
+    .chess-piece:nth-of-type(3) {
+        z-index: 0;
+        margin-right: -10px;
+    }
+
+    .wcp {
+        fill: #fff;
+    }
+
+    .bcp {
+        fill: #a2a2a2;
+    }
+
     #chessboard-container {
         position: fixed;
         margin-left: 50%;
