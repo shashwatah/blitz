@@ -82,7 +82,6 @@
         </button> 
     </div>
 {:else if currentGSP === GameSetupPage.PrivateGameSetup && selectedGM === GameMode.Private} <!-- redundant? -->
-
     {#if selectedPGM === PrivateGameMode.None}
         <div id="pgm-sel-container" class="sr-container">
             <button id="pgm-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectGameMode}>X</button>
