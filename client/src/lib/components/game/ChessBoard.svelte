@@ -7,10 +7,13 @@
     // |- but a major improvement, can work on top of this now. 
 
     //data
-    import { chessPieces } from "../data/chessPieces";
-    import type { ChessBlock, ChessBlockNotation, ChessBoard } from "../types/chessBoard";
+    import type { ChessBlock, ChessBlockNotation, ChessBoard } from "../../types/chessBoard";
+    import { Color } from "../../types/general";
+   
+    import { chessPieces } from "../../data/chessPieces";
     
-    const playerColor: string = "white";
+    export let p1Color: Color;
+    export let p2Color: Color;
 
     // main functions 
     function createChessBoard(): ChessBoard {
@@ -66,9 +69,9 @@
 
     function getChessPieceColor(chessBlock: ChessBlock): string {
         if (chessBlock.piece?.isOpponent) {
-            return playerColor === "white" ? "black" : "white";
+            return p2Color;
         } else {
-            return playerColor;
+            return p1Color;
         }
     }
 
@@ -83,7 +86,8 @@
             {#each row as block}
                 <div class="chessboard-block {getBlockColor(block)}-chessboard-block">
                     {#if block?.piece}
-                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" class="chess-piece {getChessPieceColor(block)}-chess-piece">
+                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" 
+                            class="chess-piece {getChessPieceColor(block)}-chess-piece">
                             {@html chessPieces[block.piece.name].svg}
                         </svg>
                     {/if}

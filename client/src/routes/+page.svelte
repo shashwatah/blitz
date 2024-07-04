@@ -1,8 +1,10 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
-    import { ChessBoardPos } from "$lib/types/chessBoard";
     
-    import Chessboard from "$lib/components/Chessboard.svelte";
+    import { ChessBoardPos } from "$lib/types/chessBoard";
+    import { Color } from "$lib/types/general";
+
+    import Chessboard from "$lib/components/game/ChessBoard.svelte";
     import GameSetup from "$lib/components/GameSetup.svelte";
     
     let chessboardPos: ChessBoardPos = ChessBoardPos.Default; // default, pulled, pushed, center 
@@ -22,7 +24,7 @@
 </div>
 
 <div id="chessboard-container" class="chessboard-pos-{chessboardPos}">
-    <Chessboard/>
+    <Chessboard p1Color={Color.White} p2Color={Color.Black}/>
 </div>
 
 <style>

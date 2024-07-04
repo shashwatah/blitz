@@ -17,7 +17,7 @@
         height: 42.5px;
         position: fixed;
         margin-left: 50%;
-        transform: translateX(-50%);
+        transform: translateX(-50.5%); /* ? */
         transition: 0.2s linear;
     }
     
