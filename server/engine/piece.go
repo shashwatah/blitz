@@ -12,5 +12,13 @@ const (
 
 type Piece struct {
 	player uint8
-	pieceType string
+	kind PieceType 
 }
+
+func(p Piece) isValidMove(_ Move) bool { return true }
+
+func(p Piece) getValidMoves() []Move { return []Move{} }
+
+// king: inCheck, inCheckmate, castling
+// rook: canCastle,
+// pawn: canPromote, promote
