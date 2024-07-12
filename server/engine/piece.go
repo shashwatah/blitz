@@ -1,23 +1,23 @@
 package engine
 
-type PieceType int 
+type ptype int 
 const (
-	King PieceType = iota+1
-	Queen
-	Rook
-	Knight
-	Bishop
-	Pawn
+	king ptype = iota+1
+	queen
+	rook
+	knight
+	bishop
+	pawn
 )
 
-type Piece struct {
+type piece struct {
 	player uint8
-	kind PieceType 
+	ptype ptype 
 }
 
-func(p Piece) isValidMove(_ Move) bool { return true }
+func(p piece) isValidMove(_ move) bool { return true }
 
-func(p Piece) getValidMoves() []Move { return []Move{} }
+func(p piece) getValidMoves() []move { return []move{} }
 
 // king: inCheck, inCheckmate, castling
 // rook: canCastle,

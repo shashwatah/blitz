@@ -1,7 +1,7 @@
 package engine
 
-type Color int
+type color int
 const (
-	White Color = iota+1
-	Black
+	white color = iota+1
+	black
 )

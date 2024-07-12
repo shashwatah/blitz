@@ -4,14 +4,27 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"github.com/shashwatah/blitz/server/engine"
 )
 
 func handleRoot(res http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(res, "root: server is running")
+	fmt.Fprint(res, "root: server is running")
+}
+
+func handleGame(res http.ResponseWriter, req *http.Request) {
+	game := engine.InitGame([2]string{"shashwatah", "guest_514"});
+	status := game.GetStatus()
+
+	if (status != 1) {
+		fmt.Fprint(res, "game: error")
+	}
+	
+	fmt.Fprint(res, "game: game created; status: active")
 }
 
 func setupRoutes() {
 	http.HandleFunc("/", handleRoot)
+	http.HandleFunc("/game", handleGame)
 }
 
 func main() {

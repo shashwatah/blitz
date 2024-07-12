@@ -1,8 +1,8 @@
 package engine
 
-type Player struct {
+type player struct {
 	name string
-	color Color
+	color color
 	timer string
-	capturedPieces []Piece
+	capturedPieces []piece 
 }
