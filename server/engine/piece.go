@@ -2,11 +2,11 @@ package engine
 
 type ptype int 
 const (
-	king ptype = iota+1
-	queen
-	rook
+	rook ptype = iota+1
 	knight
 	bishop
+	queen
+	king
 	pawn
 )
 
@@ -15,9 +15,9 @@ type piece struct {
 	ptype ptype 
 }
 
-func(p piece) isValidMove(_ move) bool { return true }
+// func(p piece) isValidMove(_ move) bool { return true }
 
-func(p piece) getValidMoves() []move { return []move{} }
+// func(p piece) getValidMoves() []move { return []move{} }
 
 // king: inCheck, inCheckmate, castling
 // rook: canCastle,

@@ -16,25 +16,15 @@ type Game struct {
 	moves []move
 }
 
-func InitGame(players [2]string) Game {
-	pOne := player{
-		name: players[0],
-		color: white,
-		timer: "3:00",
-		capturedPieces: []piece{},
-	} 
+func InitGame(p [2]string) Game {
+	p1 := initPlayer(p[0], white)
+	p2 := initPlayer(p[1], black)
 
-	pTwo := player{
-		name: players[1],
-		color: black,
-		timer: "3:00",
-		capturedPieces: []piece{},
-	}
-
-	b := setupBoard();
+	b := setupBoard()
+	b.print()
 	
 	g := Game{
-		players: [2]player{pOne, pTwo},
+		players: [2]player{p1, p2},
 		board: b,
 		turn: 0,
 		status: active,
@@ -47,3 +37,7 @@ func InitGame(players [2]string) Game {
 func (g Game) GetStatus() int {
 	return int(g.status)
 }
+
+
+// getters, movepiece, abort, resign, draw    
+// game loop? timer?
