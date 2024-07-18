@@ -1,16 +1,9 @@
-enum PieceType {
-    Rook = 0,
-    Knight,
-    Bishop,
-    Queen, 
-    King, 
-    Pawn
-}
+import { ChessPiece, PlayerNum } from "../types/general.enums";
 
 interface Block {
     piece?: {
-        player: number,
-        type: PieceType
+        player: PlayerNum,
+        type: ChessPiece
     } 
 }
 
@@ -21,10 +14,10 @@ export default class Chess {
 
     constructor() {
         this.board = [];
-        this.setup();
+        this.setupBoard();
     }
 
-    private setup()  {
+    private setupBoard()  {
         for (let i = 0; i < 8; i++) {
             let arr: Block[] = [];
             for (let i = 0; i < 8; i++) {
@@ -33,11 +26,11 @@ export default class Chess {
             this.board.push(arr);
         }
 
-        this.populate(0);
-        this.populate(1);
+        this.populatePlayer(PlayerNum.One);
+        this.populatePlayer(PlayerNum.Two);
     }
 
-    private populate(player: number) {
+    private populatePlayer(player: PlayerNum) {
         let pieces = [0, 1, 2, 3, 4, 2, 1, 0]
 
         let r1 = 7 * player;

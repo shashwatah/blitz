@@ -1,24 +1,22 @@
+import { Color, GameStatus, PlayerNum } from "../types/general.enums";
+import Player from "./player";
 import Chess from "./chess";
 
-enum GameStatus {
-    Active,
-    OneWin,
-    TwoWin,
-    Stalemate
-}
-
-export default class Game {
-    private players: string[];
+export default class Game { 
+    private playerOne: Player;
+    private playerTwo: Player;
     private chess: Chess;
     private status: GameStatus;
-    private turn: number;
+    private turn: PlayerNum;
     // private moves: Array<Move>
 
-    constructor(players: Array<string>) {
-        this.players = players;
+    // colour will be random eventually.
+    constructor(p1: string, p2: string) {
+        this.playerOne = new Player(p1, Color.White);
+        this.playerTwo = new Player(p2, Color.Black);
         this.chess = new Chess();
         this.status = GameStatus.Active;
-        this.turn = 1;
+        this.turn = PlayerNum.One;
     }
 
     printBoard() {
