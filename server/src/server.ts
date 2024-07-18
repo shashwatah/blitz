@@ -1,15 +1,14 @@
 import express, { Express, Response, Request } from "express";
 import dotenv from "dotenv";
 
+import router from "./router";
+
 dotenv.config();
 
-const server: Express = express();
 const port = process.env.PORT || 3000;
+const server: Express = express();
 
-server.get("/", (req: Request, res: Response) => {
-    console.log("[server] [root]: hit") 
-    res.send("[root]: server is running");
-});
+server.use(router);
 
 server.listen(port, () => {
     console.log(`[server]: Server is running on port: ${port}`);
