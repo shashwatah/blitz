@@ -1,36 +1,34 @@
 import { ChessPiece, PlayerNum } from "../types/general.enums";
 
-interface Block {
+interface Chessblock {
     piece?: {
         player: PlayerNum,
         type: ChessPiece
     } 
 }
 
-type Board = Block[][];
-
-export default class Chess {
-    private board: Board; 
+export default class Chessboard {
+    private board: Chessblock[][]; 
 
     constructor() {
         this.board = [];
-        this.setupBoard();
+        this.setup();
     }
 
-    private setupBoard()  {
+    private setup()  {
         for (let i = 0; i < 8; i++) {
-            let arr: Block[] = [];
+            let arr: Chessblock[] = [];
             for (let i = 0; i < 8; i++) {
                 arr.push({});
             }
             this.board.push(arr);
         }
 
-        this.populatePlayer(PlayerNum.One);
-        this.populatePlayer(PlayerNum.Two);
+        this.populate(PlayerNum.One);
+        this.populate(PlayerNum.Two);
     }
 
-    private populatePlayer(player: PlayerNum) {
+    private populate(player: PlayerNum) {
         let pieces = [0, 1, 2, 3, 4, 2, 1, 0]
 
         let r1 = 7 * player;
@@ -51,7 +49,7 @@ export default class Chess {
         }
     }
 
-    printBoard() {
+    print() {
         console.log(JSON.stringify(this.board, null, 2));
     }
 }

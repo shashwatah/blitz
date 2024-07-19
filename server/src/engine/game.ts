@@ -1,25 +1,37 @@
 import { Color, GameStatus, PlayerNum } from "../types/general.enums";
 import Player from "./player";
-import Chess from "./chess";
+import Chessboard from "./chessboard";
 
 export default class Game { 
     private playerOne: Player;
     private playerTwo: Player;
-    private chess: Chess;
+    private chessboard: Chessboard;
     private status: GameStatus;
     private turn: PlayerNum;
     // private moves: Array<Move>
 
-    // colour will be random eventually.
-    constructor(p1: string, p2: string) {
-        this.playerOne = new Player(p1, Color.White);
-        this.playerTwo = new Player(p2, Color.Black);
-        this.chess = new Chess();
+    constructor(p1Username: string, p2Username: string) {
+        let [p1Color, p2Color] = this.decideColor();
+
+        this.playerOne = new Player(p1Username, p1Color);
+        this.playerTwo = new Player(p2Username, p2Color);
+        this.chessboard = new Chessboard();
         this.status = GameStatus.Active;
-        this.turn = PlayerNum.One;
+        this.turn = p1Color == 0 ? PlayerNum.One : PlayerNum.Two;
     }
 
-    printBoard() {
-        this.chess.printBoard();
+    decideColor(): [Color, Color] {
+        return Math.random() < 0.5 ? 
+            [Color.White, Color.Black] : 
+            [Color.Black, Color.White];
+    }
+
+    printPlayers() {
+        console.log("player one:", this.playerOne.json());
+        console.log("player two:", this.playerTwo.json());
+    }
+
+    printChessboard() {
+        this.chessboard.print();
     }   
 }
