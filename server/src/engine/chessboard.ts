@@ -1,4 +1,5 @@
 import { ChessPiece, PlayerNum } from "../types/general.enums";
+import { Location, Move } from "../types/general.interfaces";
 
 interface Chessblock {
     piece?: {
@@ -47,6 +48,41 @@ export default class Chessboard {
                 type: 5
             }
         }
+    }
+
+    move(move: Move): {movedPieceName: string, capturedPieceName: string | undefined} {
+        let capturedPieceName: string | undefined;
+
+        let startPosPiece = this.getPieceAt(move.startPos);
+        let endPosPiece = this.getPieceAt(move.endPos); 
+
+        if (startPosPiece === undefined) {
+            throw new Error("move error: no piece exists at start position.");
+        }
+
+        if (startPosPiece.player !== move.player) {
+            throw new Error("move error: the piece at start pos does not belong to player");
+        }
+
+        if (endPosPiece !== undefined) {
+            if (endPosPiece.player === move.player) {
+                throw new Error("[move] [error]: a piece belonging to the player already exists at end position.")
+            } else {
+                capturedPieceName = ChessPiece[endPosPiece.type];
+            }
+        }
+
+        this.board[move.endPos.x][move.endPos.y] = this.board[move.startPos.x][move.startPos.y];
+        this.board[move.startPos.x][move.startPos.y] = {};
+        
+        return {
+            movedPieceName: ChessPiece[startPosPiece.type],
+            capturedPieceName
+        }
+    }
+
+    getPieceAt(pos: Location): { player: PlayerNum, type: ChessPiece } | undefined {
+        return this.board[pos.x][pos.y].piece
     }
 
     print() {
