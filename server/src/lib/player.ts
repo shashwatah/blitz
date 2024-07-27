@@ -1,27 +1,33 @@
 import WebSocket from "ws";
-import { PlayerColor, ChessPiece } from "./types";
+import { PlayerColor, ChessPiece, PlayerNum } from "./types";
+
 
 export default class Player {
-    private ws: WebSocket;
+    private socket: WebSocket;
+    private number: PlayerNum;
     private color: PlayerColor;
     private timer: string;
     private capturedPieces: ChessPiece[];
 
-    constructor(ws: WebSocket, color: PlayerColor) {
-        this.ws = ws;
+    constructor(socket: WebSocket, number: PlayerNum, color: PlayerColor) {
+        this.socket = socket;
+        this.number = number;
         this.color = color;
         this.timer = "3:00";
         this.capturedPieces = []
-
-        this.listen();
     }
 
-    private listen() {
-        this.ws.on("message", (msg) => {
-            console.log(`[server] [ws] client: ${msg}`);
-            if (this.ws.readyState === WebSocket.OPEN) {
-                this.ws.send(`hello from server`);
-            }
-        });
+    listen(listener: (data: WebSocket.RawData) => void) {
+        this.socket.on("message", listener);
+    }
+
+    tell(message: string) {
+        if (this.socket.readyState === WebSocket.OPEN) {
+            this.socket.send(message);
+        }
+    }
+
+    getNumber(): PlayerNum {
+        return this.number;
     }
 }

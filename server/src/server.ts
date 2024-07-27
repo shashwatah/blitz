@@ -14,16 +14,16 @@ const server: http.Server = http.createServer(exp);
 
 exp.use(router);
 
-server.on("upgrade", (req, sock, head) => { 
+server.on("upgrade", (req, socket, head) => { 
     if (req.url === "/game") {
-        wss.handleUpgrade(req, sock, head, (ws) => {
+        wss.handleUpgrade(req, socket, head, (ws) => {
             wss.emit("connection", ws, req);
         })
     } else {
-        sock.destroy();
+        socket.destroy();
     }
 });
 
 server.listen(port, () => {
-    console.log(`[server] [http]: Server is running on port: ${port}`);
+    console.log(`Server is running on port: ${port}`);
 });

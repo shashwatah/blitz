@@ -9,22 +9,22 @@ let waiting: WebSocket | undefined;
 wss.on("connection", (ws: WebSocket) => {
     ws.on("error", console.error)
 
-    if (waiting === undefined) {
+    if (!waiting) {
         waiting = ws;
-        console.log("[ws]: player one connected, waiting for player two")
+        console.log("[ws]: player connected, waiting for another player to join")
         return;
     }
 
     let game = new Game(waiting, ws);
-    console.log(`[ws]: player two connected, game status: ${game.getStatus().toLowerCase()}`);
+    console.log(`[ws]: player connected, game status: ${game.getStatus().toLowerCase()}`);
 
     games.push(game);
-    console.log(`[ws]: active games = ${games}`)
+    console.log(`[ws]: active games: ${games.length}`)
     
     waiting = undefined;
     
     ws.on("close", () => {
-        console.log("[server] [ws]: client disconnected");
+        console.log("[ws]: client disconnected");
     })
 });
 
