@@ -1,15 +1,12 @@
 import WebSocket from "ws";
-import { Chess } from "chess.js";
+import { Chess, Move} from "chess.js";
 
-import { GameStatus, PlayerColor, PlayerNum } from "./types";
+import { GameStatus, PlayerColor, PlayerNum, Message} from "./types";
 import { MOVE } from "./messages";
 
 import Player from "./player";
 
-// which player is one (vice versa)?
-// player id instead of player number?
-// add listener function and nomenclature
-//  should it be in a different file?
+// sample move for w m1: {"type": "move", "move": {"from": "b2", "to": "b4"}}
 
 export default class Game { 
     private playerOne: Player;
@@ -28,7 +25,8 @@ export default class Game {
         this.status = "ACTIVE";
         this.turn = p1Color === "WHITE" ? "ONE" : "TWO";
 
-        this.addListenerToPlayers();
+        this.listen(this.playerOne);
+        this.listen(this.playerTwo);
     }
 
     private rngColor(): [PlayerColor, PlayerColor] {
@@ -41,29 +39,40 @@ export default class Game {
         this.turn = this.turn === "ONE" ? "TWO" : "ONE";
     }
 
-    private addListenerToPlayers() {
-        [this.playerOne, this.playerTwo].forEach((player, i) => {
-            player.listen((data: WebSocket.RawData) => {
-                const message = data.toString();
+    private listen(player: Player) {
+        player.listen((data: WebSocket.RawData) => {
+            const message: Message = JSON.parse(data.toString()); // needs try block?
 
-                if (this.status !== "ACTIVE") {
-                    player.tell("[server] [ws]: game is not active");
+            // the chessboard (chess.js) is agnostic to the state of the game (i.e which player is black/white)
+            // it is important that chess.turn stays is sync with this.turn for the the game to function properly
+            //   could also check if the current players color matches chess.turn 
+            //   but this condition will later check for playerid
+            if (player.getNumber() !== this.getTurn()) {
+                player.tell("[server] [ws] [game]: not your turn");
+                return;
+            }
+
+            if (message.type === MOVE && message.move) {
+                let move: Move;
+                try {
+                    move = this.chess.move({
+                        from: message.move.from,
+                        to: message.move.to
+                    });
+                } catch (err) {
+                    player.tell("[server] [ws] [game]: invalid move");
                     return;
                 }
+                let moveMsg = `moved ${move.piece} from ${move.from} to ${move.to}`;
 
-                if (message === MOVE) {
-                    if (player.getNumber() !== this.turn) {
-                        player.tell("[server] [ws] [game]: this not your turn");
-                        return;
-                    }
-                    console.log(`[ws] [game]: player ${player.getNumber().toLowerCase()} made a move`)
-                    player.tell("[server] [ws] [game]: you made a move");
+                console.log(`\n[ws]: player ${this.getTurn().toLowerCase()} ${moveMsg}`);
+                console.log(`\n[ws]: board: \n${this.getBoard()}`);
+                player.tell(`[server] [ws] [game]: you ${moveMsg}`);
 
-                    this.toggleTurn();
-                }
-            });
+                this.toggleTurn();
+            }
         });
-    }
+    }   
 
     getStatus() {
         return this.status;
@@ -71,5 +80,9 @@ export default class Game {
 
     getBoard() {
         return this.chess.ascii();
+    }
+
+    getTurn() {
+        return this.turn;
     }
 }

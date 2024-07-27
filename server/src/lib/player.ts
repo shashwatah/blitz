@@ -1,13 +1,12 @@
 import WebSocket from "ws";
-import { PlayerColor, ChessPiece, PlayerNum } from "./types";
-
+import { PlayerColor, PlayerNum } from "./types";
 
 export default class Player {
     private socket: WebSocket;
-    private number: PlayerNum;
+    private number: PlayerNum; // will be replaced with playerid later. 
     private color: PlayerColor;
     private timer: string;
-    private capturedPieces: ChessPiece[];
+    private capturedPieces: []; // use 'PieceSymbol' from chess.js
 
     constructor(socket: WebSocket, number: PlayerNum, color: PlayerColor) {
         this.socket = socket;

@@ -4,4 +4,10 @@ export type PlayerNum = "ONE" | "TWO";
 
 export type PlayerColor = "WHITE" | "BLACK";
 
-export type ChessPiece = "k" | "q" | "r" | "n" | "b" | "p";
+export type Message = {
+    type: string,
+    move?: {
+        from: string,
+        to: string
+    }
+}   

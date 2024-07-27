@@ -16,10 +16,11 @@ wss.on("connection", (ws: WebSocket) => {
     }
 
     let game = new Game(waiting, ws);
-    console.log(`[ws]: player connected, game status: ${game.getStatus().toLowerCase()}`);
+    console.log(`[ws]: player connected, game created; status: ${game.getStatus()}; turn: ${game.getTurn()}`);
+    console.log(`\n[ws]: board: \n${game.getBoard()}`);
 
     games.push(game);
-    console.log(`[ws]: active games: ${games.length}`)
+    console.log(`\n[ws]: active games: ${games.length}`)
     
     waiting = undefined;
     
