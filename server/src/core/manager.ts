@@ -5,7 +5,7 @@ import Game from "./game"
 
 export default class Manager {
     private games: Game[];
-    private waiting: WebSocket | undefined; // will be Player | undefined later
+    private waiting: WebSocket | undefined;
     
     constructor() {
         this.games = [];
@@ -22,6 +22,11 @@ export default class Manager {
                 ws.send("[server] [ws]: invalid message: json error")
                 return;
             }
+
+            if (this.waiting === ws) {
+                ws.send("[server] [ws]: already waiting for a game");
+                return;
+            }
             
             // CREATE GAME
             if (message.type === CREATE_GAME) {
@@ -32,27 +37,24 @@ export default class Manager {
             // JOIN GAME
             // message: {"type": "join_game"} 
             if (message.type === JOIN_GAME) {
-                if (this.waiting === ws) {
-                    ws.send("[server] [ws]: already waiting for a game");
-                    return;
-                }
-            
                 if (!this.waiting) {
                     this.waiting = ws;
                     ws.send("[game]: connected, waiting for another player to join.");
                     return;
                 }
         
+                // "user"s will be elevated to "player"s in Game, this listener will be dropped for a new one. 
                 let game = new Game(this.waiting, ws);
                 this.games.push(game);
                 this.waiting = undefined;
 
-                game.tellBoth(`[game]: both players connected, game has begun; current turn: ${game.getTurn()}`);
                 // console logs should ideally be in top level files (ws in this case)
                 console.log(`[ws]: game created; active games: ${this.getActiveGames()}`) 
                 
                 return;
             }
+
+            // handle match abandonment
 
             ws.send("[server] [ws]: invalid message");
         });

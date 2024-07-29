@@ -7,13 +7,13 @@ let manager = new Manager();
 
 wss.on("connection", (ws: WebSocket) => {
     ws.on("error", console.error);
-    console.log("[ws]: player connected");
+    console.log("[ws]: user connected");
 
     manager.manage(ws);
     
     ws.on("close", () => {
         console.log("[ws]: client disconnected");
-    })
+    });
 });
 
 export default wss;
