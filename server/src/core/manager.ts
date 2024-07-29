@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import Game from "./game"
-import { PlayerNum } from "./types";
+import { PlayerNum } from "../lib/types";
 
 export default class Manager {
     private games: Game[];
