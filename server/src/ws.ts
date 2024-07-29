@@ -7,16 +7,9 @@ let manager = new Manager();
 
 wss.on("connection", (ws: WebSocket) => {
     ws.on("error", console.error);
-    
-    let turn = manager.manage(ws);
-    
-    if (!turn) {
-        console.log("[ws]: player connected, waiting for another player to join");
-        return;
-    }
+    console.log("[ws]: player connected");
 
-    console.log(`[ws]: another player connected, game created; current turn: ${turn}`);
-    console.log(`[ws]: active games: ${manager.getGamesNum()}`)
+    manager.manage(ws);
     
     ws.on("close", () => {
         console.log("[ws]: client disconnected");

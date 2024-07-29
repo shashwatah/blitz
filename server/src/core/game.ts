@@ -2,7 +2,7 @@ import WebSocket from "ws";
 import { Chess, Move} from "chess.js";
 
 import { GameStatus, PlayerColor, PlayerNum } from "../lib/types";
-import { MOVE } from "../lib/messages";
+import { CREATE_GAME, JOIN_GAME, MOVE } from "../lib/messages";
 
 import Player from "./player";
 
@@ -42,8 +42,21 @@ export default class Game {
     private listen(player: Player) {
         player.listen((data: WebSocket.RawData) => {
             // parsing incoming message, this returns 'any' data. 
-            const message = JSON.parse(data.toString()); // needs try block?
-            
+            let message;
+            try {
+                message = JSON.parse(data.toString());
+            } catch (err) {
+                player.tell("[server] [ws]: invalid message: json error")
+                return;
+            }
+
+
+            // doesn't work, handlers from a different 
+            if ([JOIN_GAME, CREATE_GAME].includes(message.type)) {
+                player.tell("[server] [ws]: can't do that while in a game");
+                return;
+            }
+
             // checking if the player sending the message is in turn
             // will check with player id or color (wrt chess.js) later
             if (player.getNumber() !== this.getTurn()) {
@@ -51,8 +64,8 @@ export default class Game {
                 return;
             }
 
-            // sample white move 1: {"type": "move", "data": {"from": "b2", "to": "b4"}}
             // MOVE 
+            // WM1: {"type": "move", "data": {"from": "b2", "to": "b4"}}
             if (message.type === MOVE) {
                 // should type guards be used here?
                 let move: Move;
@@ -72,7 +85,10 @@ export default class Game {
                 this.tellBoth(`[game]: board: \n${this.getBoard()}`);
 
                 this.toggleTurn();
+                return;
             }
+
+            player.tell("[server] [ws]: invalid message");
         });
     }   
 
