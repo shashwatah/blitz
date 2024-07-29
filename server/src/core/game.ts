@@ -23,7 +23,10 @@ export default class Game {
         this.playerTwo = new Player(p2Socket, "TWO", p2Color);
         this.chess = new Chess();
         this.status = "ACTIVE";
-        this.turn = p1Color === "WHITE" ? "ONE" : "TWO";
+        this.turn = p1Color === "WHITE" ? "ONE" : "TWO"; // manage this using chess.js or color?
+
+        // tell both players game has begun, tell them their colors
+        this.tellBoth(`[game]: both players connected, game has begun; current turn: ${this.getTurn()}`);
 
         this.listen(this.playerOne);
         this.listen(this.playerTwo);
@@ -47,13 +50,6 @@ export default class Game {
                 message = JSON.parse(data.toString());
             } catch (err) {
                 player.tell("[server] [ws]: invalid message: json error")
-                return;
-            }
-
-
-            // doesn't work, handlers from a different 
-            if ([JOIN_GAME, CREATE_GAME].includes(message.type)) {
-                player.tell("[server] [ws]: can't do that while in a game");
                 return;
             }
 
@@ -98,7 +94,7 @@ export default class Game {
             this.playerOne.tell(message);
     }
 
-    tellBoth(message: string) {
+    private tellBoth(message: string) {
         this.playerOne.tell(message);
         this.playerTwo.tell(message);
     }
