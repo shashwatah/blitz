@@ -25,8 +25,9 @@ export default class Game {
         this.status = "ACTIVE";
         this.turn = p1Color === "WHITE" ? "ONE" : "TWO"; // manage this using chess.js or color?
 
-        // tell both players game has begun, tell them their colors
-        this.tellBoth(`[game]: both players connected, game has begun; current turn: ${this.getTurn()}`);
+        this.tellBoth(`[game]: both players connected, game has begun`);
+        this.tellActive("[game]: you are assigned white. it's your turn");
+        this.tellInactive("[game]: you are assigned black. it's opp's turn")
 
         this.listen(this.playerOne);
         this.listen(this.playerTwo);
@@ -77,7 +78,7 @@ export default class Game {
                 
                 let moveMsg = `moved ${move.piece} from ${move.from} to ${move.to}`;
                 player.tell(`[you]: ${moveMsg}`);
-                this.tellOther(`[opp]: ${moveMsg}`);
+                this.tellInactive(`[opp]: ${moveMsg}`);
                 this.tellBoth(`[game]: board: \n${this.getBoard()}`);
 
                 this.toggleTurn();
@@ -88,7 +89,13 @@ export default class Game {
         });
     }   
 
-    private tellOther(message: string) {
+    private tellActive(message: string) {
+        this.playerOne.getNumber() === this.turn ?
+            this.playerOne.tell(message) :
+            this.playerTwo.tell(message);
+    }
+
+    private tellInactive(message: string) {
         this.playerOne.getNumber() === this.turn ?
             this.playerTwo.tell(message) :
             this.playerOne.tell(message);
