@@ -6,7 +6,9 @@ import { MOVE } from "./messages";
 
 import Player from "./player";
 
-// sample move for w m1: {"type": "move", "move": {"from": "b2", "to": "b4"}}
+// sample move for w m1: {"type": "move", "data": {"from": "b2", "to": "b4"}}
+
+// currently using tell, listen, tellOther and tellBoth as names for socket comms, might change later.
 
 export default class Game { 
     private playerOne: Player;
@@ -47,7 +49,7 @@ export default class Game {
             // checking if the player sending the message is in turn
             // will check with player id or color (wrt chess.js) later
             if (player.getNumber() !== this.getTurn()) {
-                player.tell("[server] [ws] [game]: not your turn");
+                player.tell("[game]: not your turn");
                 return;
             }
 
@@ -61,19 +63,32 @@ export default class Game {
                         to: message.data.to
                     });
                 } catch (err) {
-                    player.tell("[server] [ws] [game]: invalid move");
+                    player.tell("[game]: invalid move");
                     return;
                 }
+                
                 let moveMsg = `moved ${move.piece} from ${move.from} to ${move.to}`;
-
-                console.log(`\n[ws]: player ${this.getTurn().toLowerCase()} ${moveMsg}`);
-                console.log(`\n[ws]: board: \n${this.getBoard()}`);
-                player.tell(`[server] [ws] [game]: you ${moveMsg}`);
+                player.tell(`[you]: ${moveMsg}`);
+                this.tellOther(`[opp]: ${moveMsg}`);
+                this.tellBoth(`[game]: board: \n${this.getBoard()}`);
 
                 this.toggleTurn();
             }
         });
     }   
+
+    private tellOther(message: string) {
+        [this.playerOne, this.playerTwo].forEach((player) => {
+            if (player.getNumber() !== this.turn) {
+                player.tell(message);
+            }
+        });
+    }
+
+    tellBoth(message: string) {
+        this.playerOne.tell(message);
+        this.playerTwo.tell(message);
+    }
 
     getStatus() {
         return this.status;
