@@ -1,7 +1,7 @@
 import WebSocket from "ws";
 import { Chess, Move} from "chess.js";
 
-import { GameStatus, PlayerColor, PlayerNum, Message} from "./types";
+import { GameStatus, PlayerColor, PlayerNum } from "./types";
 import { MOVE } from "./messages";
 
 import Player from "./player";
@@ -41,23 +41,24 @@ export default class Game {
 
     private listen(player: Player) {
         player.listen((data: WebSocket.RawData) => {
-            const message: Message = JSON.parse(data.toString()); // needs try block?
-
-            // the chessboard (chess.js) is agnostic to the state of the game (i.e which player is black/white)
-            // it is important that chess.turn stays is sync with this.turn for the the game to function properly
-            //   could also check if the current players color matches chess.turn 
-            //   but this condition will later check for playerid
+            // parsing incoming message, this returns 'any' data. 
+            const message = JSON.parse(data.toString()); // needs try block?
+            
+            // checking if the player sending the message is in turn
+            // will check with player id or color (wrt chess.js) later
             if (player.getNumber() !== this.getTurn()) {
                 player.tell("[server] [ws] [game]: not your turn");
                 return;
             }
 
-            if (message.type === MOVE && message.move) {
+            // MOVE 
+            if (message.type === MOVE) {
+                // should type guards be used here?
                 let move: Move;
                 try {
                     move = this.chess.move({
-                        from: message.move.from,
-                        to: message.move.to
+                        from: message.data.from,
+                        to: message.data.to
                     });
                 } catch (err) {
                     player.tell("[server] [ws] [game]: invalid move");
