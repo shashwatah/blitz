@@ -1,6 +1,5 @@
 import WebSocket from "ws";
 import Manager from "./core/manager";
-import Game from "./core/game";
 
 const wss: WebSocket.Server = new WebSocket.Server({ noServer: true }); 
 

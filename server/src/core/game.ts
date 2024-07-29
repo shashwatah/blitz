@@ -6,8 +6,6 @@ import { MOVE } from "../lib/messages";
 
 import Player from "./player";
 
-// sample move for w m1: {"type": "move", "data": {"from": "b2", "to": "b4"}}
-
 // currently using tell, listen, tellOther and tellBoth as names for socket comms, might change later.
 
 export default class Game { 
@@ -53,6 +51,7 @@ export default class Game {
                 return;
             }
 
+            // sample white move 1: {"type": "move", "data": {"from": "b2", "to": "b4"}}
             // MOVE 
             if (message.type === MOVE) {
                 // should type guards be used here?
@@ -78,11 +77,9 @@ export default class Game {
     }   
 
     private tellOther(message: string) {
-        [this.playerOne, this.playerTwo].forEach((player) => {
-            if (player.getNumber() !== this.turn) {
-                player.tell(message);
-            }
-        });
+        this.playerOne.getNumber() === this.turn ?
+            this.playerOne.tell(message) :
+            this.playerTwo.tell(message);
     }
 
     tellBoth(message: string) {
