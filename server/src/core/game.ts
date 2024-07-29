@@ -78,8 +78,8 @@ export default class Game {
 
     private tellOther(message: string) {
         this.playerOne.getNumber() === this.turn ?
-            this.playerOne.tell(message) :
-            this.playerTwo.tell(message);
+            this.playerTwo.tell(message) :
+            this.playerOne.tell(message);
     }
 
     tellBoth(message: string) {
