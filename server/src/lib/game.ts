@@ -1,10 +1,10 @@
 import WebSocket from "ws";
-import { Chess, Move} from "chess.js";
-
-import { GameStatus, PlayerColor, PlayerNum } from "../bin/types";
-import { CREATE_GAME, JOIN_GAME, MOVE } from "../bin/messages";
+import { Chess, Move } from "chess.js";
 
 import Player from "./player";
+
+import { GameStatus, PlayerColor, PlayerNum } from "../bin/types";
+import { MOVE } from "../bin/messages";
 
 // currently using tell, listen, tellOther and tellBoth as names for socket comms, might change later.
 

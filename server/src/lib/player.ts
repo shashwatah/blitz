@@ -1,4 +1,5 @@
 import WebSocket from "ws";
+
 import { PlayerColor, PlayerNum } from "../bin/types";
 
 export default class Player {
