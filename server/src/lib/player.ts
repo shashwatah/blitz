@@ -1,5 +1,5 @@
 import WebSocket from "ws";
-import { PlayerColor, PlayerNum } from "../lib/types";
+import { PlayerColor, PlayerNum } from "../bin/types";
 
 export default class Player {
     private socket: WebSocket;

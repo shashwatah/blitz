@@ -1,8 +1,8 @@
 import WebSocket from "ws";
 import { Chess, Move} from "chess.js";
 
-import { GameStatus, PlayerColor, PlayerNum } from "../lib/types";
-import { CREATE_GAME, JOIN_GAME, MOVE } from "../lib/messages";
+import { GameStatus, PlayerColor, PlayerNum } from "../bin/types";
+import { CREATE_GAME, JOIN_GAME, MOVE } from "../bin/messages";
 
 import Player from "./player";
 

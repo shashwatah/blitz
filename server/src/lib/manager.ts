@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 
-import { CREATE_GAME, JOIN_GAME } from "../lib/messages";
+import { CREATE_GAME, JOIN_GAME } from "../bin/messages";
 import Game from "./game"
 
 export default class Manager {

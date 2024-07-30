@@ -1,5 +1,5 @@
 import WebSocket from "ws";
-import Manager from "./core/manager";
+import Manager from "./lib/manager";
 
 const wss: WebSocket.Server = new WebSocket.Server({ noServer: true }); 
 
