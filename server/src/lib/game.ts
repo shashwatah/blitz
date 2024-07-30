@@ -3,26 +3,29 @@ import { Chess, Move } from "chess.js";
 
 import Player from "./player";
 
-import { GameStatus, PlayerColor, PlayerNum } from "../bin/types";
+import { GameStatus, GameType, PlayerColor, PlayerNum } from "../bin/types";
 import { MOVE } from "../bin/messages";
 
 // currently using tell, listen, tellOther and tellBoth as names for socket comms, might change later.
+// redundant data? : game type, player num
 
 export default class Game { 
+    private type: GameType;
+    private status: GameStatus;
     private playerOne: Player;
     private playerTwo: Player;
     private chess: Chess;
-    private status: GameStatus;
     private turn: PlayerNum;
     // private moves: Array<Move>
 
-    constructor(p1Socket: WebSocket, p2Socket: WebSocket) {
+    constructor(type: GameType, p1Socket: WebSocket, p2Socket: WebSocket) {
         let [p1Color, p2Color] = this.rngColor();
 
+        this.type = type;
+        this.status = "ACTIVE";
         this.playerOne = new Player(p1Socket, "ONE", p1Color);
         this.playerTwo = new Player(p2Socket, "TWO", p2Color);
         this.chess = new Chess();
-        this.status = "ACTIVE";
         this.turn = p1Color === "WHITE" ? "ONE" : "TWO"; // manage this using chess.js or color?
 
         this.tellBoth(`[game]: both players connected, game has begun`);

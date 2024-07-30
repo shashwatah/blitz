@@ -17,8 +17,8 @@ wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
     let path = req.url ? splitPath(req.url) : [];
     
     // path[2] can be undefined but path[1] will never be undefined for reason spec. above
-    let msg = manager.manage(ws, path[1], path[2]);
-    if (msg) console.log(msg);
+    let message = manager.manage(ws, path[1], path[2]);
+    if (message) console.log(message);
 
     ws.on("close", () => {
         console.log("[ws]: user disconnected");

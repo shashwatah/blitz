@@ -4,13 +4,15 @@ export function splitPath(url: string): string[] {
     return split;
 }
 
-// valid path: /game/'pub'or'pvt'/?code
+// valid path: /game/'public'or'private'/?code
 export function validateGamePath(url: string | undefined): boolean {
     let path = url ? splitPath(url) : [];
 
-    if (path.length > 3) return false;
-    if (path[0] !== "game") return false;
-    if (!["pub", "pvt"].includes(path[1])) return false;
+    if (
+        path.length > 3 ||
+        path[0] !== "game" ||
+        !["public", "private"].includes(path[1])
+    ) return false;
 
     return true;
 }
