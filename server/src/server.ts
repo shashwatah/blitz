@@ -16,6 +16,7 @@ const server: http.Server = http.createServer(exp);
 
 exp.use(router);
 
+// rate limiting? do i need to check for multiple connections from the same user?
 server.on("upgrade", (req, socket, head) => { 
     if (validateGamePath(req.url)) {
         wss.handleUpgrade(req, socket, head, (ws) => {

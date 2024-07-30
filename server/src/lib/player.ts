@@ -18,10 +18,6 @@ export default class Player {
     }
 
     listen(listener: (data: WebSocket.RawData) => void) {
-        // removing the listener for "message" created in manager 
-        // this prevents the player from sending messages that are not supposed to be sent during a game (like join_game)
-        // im not sure if this is the best way to do this, but it works for now as a quick fix.
-        this.socket.removeAllListeners("message");
         this.socket.on("message", listener);
     }
 
