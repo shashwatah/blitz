@@ -2,11 +2,22 @@ import WebSocket from "ws";
 
 import Game from "./game"
 
+// User & Player:
+//      currently a websocket connection is being treated as a user which gets added into a player
+//      user will eventually be a class of its own, holding socket (& its methods) & data (id, name etc)
+//      this object will be passed around in enter and exit funcs, enabling user checks with id
+//      this user will eventually get promoted to the player class which extends it, holding data specific to the game its in
+
+// Game End:
+//      currently the game ends with game.endedBy func call when a player exits.
+//      this is fine as long as the end condition is caused by one player: exit or resign
+//      when the game ends naturally a different end function will be needed.
+
 export default class Manager {
     private games: Game[];
     private waiting: {
-        private: { [code: string]: WebSocket}
-        public: WebSocket | undefined
+        private: { [code: string]: WebSocket }
+        public?: WebSocket
     }
     
     constructor() {
@@ -26,7 +37,7 @@ export default class Manager {
     }
 
     // create/join public or private game based on url.
-    enter(user: WebSocket, room: {type: string, code: string | undefined}): string | undefined {
+    enter(user: WebSocket, room: {type: string, code?: string}): string | undefined {
         // PUBLIC GAME
         if (room.type === "public") {
             if (!this.waiting.public) {
@@ -69,12 +80,15 @@ export default class Manager {
         }
     }
 
-   exit(user: WebSocket): string | undefined {
+    // handle the conditions when the player was in the middle of something when leaving
+    exit(user: WebSocket): string | undefined {
+        // if user is waiting for a public game
         if (user === this.waiting.public) {
             this.waiting.public = undefined;
             return "user disconnected, was waiting for a public game";
         }
 
+        // if user is waiting for a private game
         for (let code in this.waiting.private) {
             if (this.waiting.private[code] === user) {
                 delete this.waiting.private[code];
@@ -82,11 +96,12 @@ export default class Manager {
             }
         }
 
+        // if user left a game by quitting the session or in game action (resign)
+        //somethings wrong here.
         let game = this.games.find((game) => game.hasUser(user));
-        if (game?.getStatus() === "ACTIVE") {
-            game.wasLeftBy(user);
-            this.games = this.games.filter((cur) => cur === game);
-            return "user disconnected, match abandoned";
-        }
+        if (!game || game.getStatus() === "END") return;
+        game.endedBy(user);
+        this.games = this.games.filter((cur) => cur === game);
+        return "user disconnected, match ended";
     }
 }

@@ -26,7 +26,7 @@ wss.on("connection", (user: WebSocket, req: IncomingMessage) => {
 
     user.on("close", () => {
         let message = manager.exit(user);
-        console.log("[ws]:", message ? message : "user disconnected.");
+        console.log("[ws]:", message ? message : "user disconnected");
     });
 });
 

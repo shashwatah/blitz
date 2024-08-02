@@ -4,7 +4,7 @@ import { Chess, Move } from "chess.js";
 import Player from "./player";
 
 import { GameStatus, GameType, PlayerColor, PlayerNum } from "../bin/types";
-import { MOVE } from "../bin/messages";
+import { MOVE, RESIGN } from "../bin/messages";
 
 // currently using tell, listen, tellOther and tellBoth as names for socket comms, might change later.
 // redundant data? : game type, player num
@@ -57,6 +57,15 @@ export default class Game {
                 return;
             }
 
+            // RESIGN
+            // can be done out of turn
+            // later, also handle draw & abort
+            if (message.type === RESIGN) {
+                this.status = "RESIGNED";
+                player.tell("[game]: you have resigned, game has ended");
+                player.exit();
+            }
+         
             // checking if the player sending the message is in turn
             // will check with player id or color (wrt chess.js) later
             if (player.getNumber() !== this.getTurn()) {
@@ -109,19 +118,20 @@ export default class Game {
         this.playerTwo.tell(message);
     }
 
+    endedBy(user: WebSocket) {
+        let message = `[game]: opp has ${this.getStatus() === "RESIGNED" ? "resigned" : "left"}, game has ended`;
+        this.status = "END";
+        [this.playerOne, this.playerTwo].forEach((player) => {
+            if (player.isUser(user)) return;
+            player.tell(message);
+            player.exit();
+        });
+    }
+
     hasUser(user: WebSocket): boolean {
         if (this.playerOne.isUser(user)) return true;
         if (this.playerTwo.isUser(user)) return true;
         return false;
-    }
-
-    wasLeftBy(user: WebSocket) {
-        this.status = "END";
-        [this.playerOne, this.playerTwo].forEach((player) => {
-            if (player.isUser(user)) return;
-            player.tell("[game]: opp left")
-            player.exit();
-        });
     }
 
     // use getters 
