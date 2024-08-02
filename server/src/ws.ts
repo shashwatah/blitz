@@ -9,19 +9,24 @@ const wss: WebSocket.Server = new WebSocket.Server({ noServer: true });
 
 let manager = new Manager();
 
-wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
-    ws.on("error", console.error);
+// user will eventually be turned into a class user, will be created here 
+// it will contain the socket, auth info (isloggedin, id, name etc)
+// on game creation in manager, user will be promoted to player which will extend user
+// on exit, instead of matching socket, id will be matched
+wss.on("connection", (user: WebSocket, req: IncomingMessage) => {
+    user.on("error", console.error);
     console.log("[ws]: user connected");
 
     // this will always be true since path has already been validated before conn upgrade
     let path = req.url ? splitPath(req.url) : [];
     
     // path[2] can be undefined but path[1] will never be undefined for reason spec. above
-    let message = manager.manage(ws, path[1], path[2]);
-    if (message) console.log(message);
+    let message = manager.enter(user, {type: path[1], code: path[2]});
+    if (message) console.log("[ws]:", message);
 
-    ws.on("close", () => {
-        console.log("[ws]: user disconnected");
+    user.on("close", () => {
+        let message = manager.exit(user);
+        console.log("[ws]:", message ? message : "user disconnected.");
     });
 });
 

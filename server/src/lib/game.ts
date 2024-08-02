@@ -109,6 +109,22 @@ export default class Game {
         this.playerTwo.tell(message);
     }
 
+    hasUser(user: WebSocket): boolean {
+        if (this.playerOne.isUser(user)) return true;
+        if (this.playerTwo.isUser(user)) return true;
+        return false;
+    }
+
+    wasLeftBy(user: WebSocket) {
+        this.status = "END";
+        [this.playerOne, this.playerTwo].forEach((player) => {
+            if (player.isUser(user)) return;
+            player.tell("[game]: opp left")
+            player.exit();
+        });
+    }
+
+    // use getters 
     getStatus() {
         return this.status;
     }

@@ -4,73 +4,89 @@ import Game from "./game"
 
 export default class Manager {
     private games: Game[];
-    private waiting: { 
-        games: {
-            user: WebSocket,
-            code: string,
-        }[], 
-        user: WebSocket | undefined
-    };
+    private waiting: {
+        private: { [code: string]: WebSocket}
+        public: WebSocket | undefined
+    }
     
     constructor() {
         this.games = [];
         this.waiting = {
-            games: [],
-            user: undefined
-        }
-    }
-
-    // create/join public or private game based on url.
-    manage(ws: WebSocket, type: string, code: string | undefined): string | undefined {
-        // PUBLIC GAME
-        if (type === "public") {
-            if (!this.waiting.user) {
-                this.waiting.user = ws;
-                ws.send("[game]: connected, waiting for another player to join");
-                return;
-            }
-    
-            let game = new Game("PUBLIC", this.waiting.user, ws);
-            this.games.push(game);
-            this.waiting.user = undefined;
-
-            return `[ws]: game created; active games: ${this.getActiveGames()}`;
-        }
-
-        // PRIVATE GAME
-        if (type === "private") {
-            // CREATE PRIVATE GAME
-            if (!code) {
-                let waiting = {
-                    user: ws,
-                    code: (Math.random() + 1).toString(36).substring(5) // generateCode() later
-                };
-                this.waiting.games.push(waiting);
-
-                ws.send(`[server] [ws]: game code: ${waiting.code}, waiting for opponent`);
-                return "[ws]: private game created; waiting for second player.";
-            }
-
-            // JOIN PRIVATE GAME
-            let waiting = this.waiting.games.find((wGame) => wGame.code === code);
-
-            if (!waiting) {
-                ws.send("[server] [ws]: no game found with this code");
-                ws.close();
-                return;
-            }
-            
-            // add code to game later?
-            let game = new Game("PRIVATE", waiting.user, ws);
-            this.games.push(game);
-            console.log(this.waiting.games);
-            this.waiting.games = this.waiting.games.filter((wGame) => wGame.code !== code);
-            console.log(this.waiting.games);
-            return `[ws]: private game started; active games: ${this.getActiveGames()}`;
+            private: {},
+            public: undefined
         }
     }
 
     private getActiveGames(): number {
         return this.games.length
+    }
+
+    private genGameCode(): string {
+        return (Math.random() + 1).toString(36).substring(5);
+    }
+
+    // create/join public or private game based on url.
+    enter(user: WebSocket, room: {type: string, code: string | undefined}): string | undefined {
+        // PUBLIC GAME
+        if (room.type === "public") {
+            if (!this.waiting.public) {
+                this.waiting.public = user;
+                user.send("[game]: connected, waiting for another player to join");
+                return;
+            }
+    
+            let game = new Game("PUBLIC", this.waiting.public, user);
+            this.games.push(game);
+            this.waiting.public = undefined;
+
+            return `game created; active games: ${this.getActiveGames()}`;
+        }
+
+        // PRIVATE GAME
+        if (room.type === "private") {
+            // CREATE PRIVATE GAME
+            if (!room.code) {
+                let code = this.genGameCode();
+                this.waiting.private[code] = user;
+
+                user.send(`[game]: game code: ${code}, waiting for opponent`);
+                return "private game created; waiting for second player.";
+            }
+
+            // JOIN PRIVATE GAME
+            if (!(room.code in this.waiting.private)) {
+                user.send("[server]: no game found with this code");
+                user.close();
+                return;
+            }
+            
+            // add code to game later?
+            let game = new Game("PRIVATE", this.waiting.private[room.code], user);
+            this.games.push(game);
+            delete this.waiting.private[room.code];
+            
+            return `private game started; active games: ${this.getActiveGames()}`;
+        }
+    }
+
+   exit(user: WebSocket): string | undefined {
+        if (user === this.waiting.public) {
+            this.waiting.public = undefined;
+            return "user disconnected, was waiting for a public game";
+        }
+
+        for (let code in this.waiting.private) {
+            if (this.waiting.private[code] === user) {
+                delete this.waiting.private[code];
+                return "user disconnected, was waiting for a private game";
+            }
+        }
+
+        let game = this.games.find((game) => game.hasUser(user));
+        if (game?.getStatus() === "ACTIVE") {
+            game.wasLeftBy(user);
+            this.games = this.games.filter((cur) => cur === game);
+            return "user disconnected, match abandoned";
+        }
     }
 }

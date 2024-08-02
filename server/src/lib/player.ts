@@ -27,6 +27,14 @@ export default class Player {
         }
     }
 
+    exit() {
+        this.socket.close();
+    }
+
+    isUser(user: WebSocket): boolean {
+        return this.socket === user;
+    }
+
     getNumber(): PlayerNum {
         return this.number;
     }
