@@ -35,7 +35,7 @@ export default class Player {
         return this.socket === user;
     }
 
-    getNumber(): PlayerNum {
-        return this.number;
+    get NUM(): PlayerNum {
+        return this.number
     }
 }

@@ -12,6 +12,7 @@ import Game from "./game"
 //      currently the game ends with game.endedBy func call when a player exits.
 //      this is fine as long as the end condition is caused by one player: exit or resign
 //      when the game ends naturally a different end function will be needed.
+//      and, if a game ends the only way it can have the manager respond to that state change is if a user leaves.
 
 export default class Manager {
     private games: Game[];
@@ -28,7 +29,7 @@ export default class Manager {
         }
     }
 
-    private getActiveGames(): number {
+    private get GAMESN(): number {
         return this.games.length
     }
 
@@ -50,7 +51,7 @@ export default class Manager {
             this.games.push(game);
             this.waiting.public = undefined;
 
-            return `game created; active games: ${this.getActiveGames()}`;
+            return `game created; active games: ${this.GAMESN}`;
         }
 
         // PRIVATE GAME
@@ -76,7 +77,7 @@ export default class Manager {
             this.games.push(game);
             delete this.waiting.private[room.code];
             
-            return `private game started; active games: ${this.getActiveGames()}`;
+            return `private game started; active games: ${this.GAMESN}`;
         }
     }
 
@@ -97,9 +98,8 @@ export default class Manager {
         }
 
         // if user left a game by quitting the session or in game action (resign)
-        //somethings wrong here.
         let game = this.games.find((game) => game.hasUser(user));
-        if (!game || game.getStatus() === "END") return;
+        if (!game || game.STATUS === "END") return;
         game.endedBy(user);
         this.games = this.games.filter((cur) => cur === game);
         return "user disconnected, match ended";

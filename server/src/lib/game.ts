@@ -30,7 +30,7 @@ export default class Game {
 
         this.tellBoth(`[game]: both players connected, game has begun`);
         this.tellActive("[game]: you are assigned white. it's your turn");
-        this.tellInactive("[game]: you are assigned black. it's opp's turn")
+        this.tellInactive("[game]: you are assigned black. it's opp's turn");
 
         this.listen(this.playerOne);
         this.listen(this.playerTwo);
@@ -68,7 +68,7 @@ export default class Game {
          
             // checking if the player sending the message is in turn
             // will check with player id or color (wrt chess.js) later
-            if (player.getNumber() !== this.getTurn()) {
+            if (player.NUM !== this.turn) {
                 player.tell("[game]: not your turn");
                 return;
             }
@@ -91,7 +91,7 @@ export default class Game {
                 let moveMsg = `moved ${move.piece} from ${move.from} to ${move.to}`;
                 player.tell(`[you]: ${moveMsg}`);
                 this.tellInactive(`[opp]: ${moveMsg}`);
-                this.tellBoth(`[game]: board: \n${this.getBoard()}`);
+                this.tellBoth(`[game]: board: \n${this.chess.ascii()}`);
 
                 this.toggleTurn();
                 return;
@@ -102,15 +102,15 @@ export default class Game {
     }   
 
     private tellActive(message: string) {
-        this.playerOne.getNumber() === this.turn ?
+        this.turn === "ONE" ?
             this.playerOne.tell(message) :
             this.playerTwo.tell(message);
     }
 
     private tellInactive(message: string) {
-        this.playerOne.getNumber() === this.turn ?
-            this.playerTwo.tell(message) :
-            this.playerOne.tell(message);
+        this.turn !== "ONE" ?
+            this.playerOne.tell(message) :
+            this.playerTwo.tell(message);
     }
 
     private tellBoth(message: string) {
@@ -119,7 +119,7 @@ export default class Game {
     }
 
     endedBy(user: WebSocket) {
-        let message = `[game]: opp has ${this.getStatus() === "RESIGNED" ? "resigned" : "left"}, game has ended`;
+        let message = `[game]: opp has ${this.status === "RESIGNED" ? "resigned" : "left"}, game has ended`;
         this.status = "END";
         [this.playerOne, this.playerTwo].forEach((player) => {
             if (player.isUser(user)) return;
@@ -134,16 +134,7 @@ export default class Game {
         return false;
     }
 
-    // use getters 
-    getStatus() {
+    get STATUS() {
         return this.status;
-    }
-
-    getBoard() {
-        return this.chess.ascii();
-    }
-
-    getTurn() {
-        return this.turn;
     }
 }
