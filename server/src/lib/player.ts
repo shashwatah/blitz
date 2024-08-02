@@ -1,40 +1,21 @@
-import WebSocket from "ws";
+import User from "./user";
 
 import { PlayerColor, PlayerNum } from "../bin/types";
 
-export default class Player {
-    private socket: WebSocket;
-    private number: PlayerNum; // will be replaced with playerid later. 
+export default class Player extends User {
+    private number: PlayerNum;
     private color: PlayerColor;
     private timer: string;
-    private capturedPieces: []; // use 'PieceSymbol' from chess.js
+    private capPieces: [];
 
-    constructor(socket: WebSocket, number: PlayerNum, color: PlayerColor) {
-        this.socket = socket;
+    constructor(user: User, number: PlayerNum, color: PlayerColor) {
+        super(user);
         this.number = number;
         this.color = color;
         this.timer = "3:00";
-        this.capturedPieces = []
+        this.capPieces = [];
     }
-
-    listen(listener: (data: WebSocket.RawData) => void) {
-        this.socket.on("message", listener);
-    }
-
-    tell(message: string) {
-        if (this.socket.readyState === WebSocket.OPEN) {
-            this.socket.send(message);
-        }
-    }
-
-    exit() {
-        this.socket.close();
-    }
-
-    isUser(user: WebSocket): boolean {
-        return this.socket === user;
-    }
-
+    
     get NUM(): PlayerNum {
         return this.number
     }

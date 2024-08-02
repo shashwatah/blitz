@@ -16,3 +16,9 @@ export function validateGamePath(url: string | undefined): boolean {
 
     return true;
 }
+
+// currently being used for generating: game id, private game code, user id
+// took this off of stackoverflow, replace with a better method
+export function genRandomStr(): string {
+    return (Math.random() + 1).toString(36).substring(5);
+}

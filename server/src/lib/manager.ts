@@ -1,7 +1,7 @@
-import WebSocket from "ws";
-
 import Game from "./game"
+import User from "./user";
 
+import { genRandomStr } from "../bin/helpers";
 // User & Player:
 //      currently a websocket connection is being treated as a user which gets added into a player
 //      user will eventually be a class of its own, holding socket (& its methods) & data (id, name etc)
@@ -17,8 +17,8 @@ import Game from "./game"
 export default class Manager {
     private games: Game[];
     private waiting: {
-        private: { [code: string]: WebSocket }
-        public?: WebSocket
+        private: { [code: string]: User }
+        public?: User
     }
     
     constructor() {
@@ -28,22 +28,19 @@ export default class Manager {
             public: undefined
         }
     }
+    
 
     private get GAMESN(): number {
         return this.games.length
     }
 
-    private genGameCode(): string {
-        return (Math.random() + 1).toString(36).substring(5);
-    }
-
     // create/join public or private game based on url.
-    enter(user: WebSocket, room: {type: string, code?: string}): string | undefined {
+    manageEntry(user: User, room: {type: string, code?: string}): string | undefined {
         // PUBLIC GAME
         if (room.type === "public") {
             if (!this.waiting.public) {
                 this.waiting.public = user;
-                user.send("[game]: connected, waiting for another player to join");
+                user.tell("[game]: connected, waiting for another player to join");
                 return;
             }
     
@@ -58,17 +55,17 @@ export default class Manager {
         if (room.type === "private") {
             // CREATE PRIVATE GAME
             if (!room.code) {
-                let code = this.genGameCode();
+                let code = genRandomStr();
                 this.waiting.private[code] = user;
 
-                user.send(`[game]: game code: ${code}, waiting for opponent`);
+                user.tell(`[game]: game code: ${code}, waiting for opponent`);
                 return "private game created; waiting for second player.";
             }
 
             // JOIN PRIVATE GAME
             if (!(room.code in this.waiting.private)) {
-                user.send("[server]: no game found with this code");
-                user.close();
+                user.tell("[server]: no game found with this code");
+                user.exit();
                 return;
             }
             
@@ -82,7 +79,7 @@ export default class Manager {
     }
 
     // handle the conditions when the player was in the middle of something when leaving
-    exit(user: WebSocket): string | undefined {
+    manageExit(user: User): string | undefined {
         // if user is waiting for a public game
         if (user === this.waiting.public) {
             this.waiting.public = undefined;
@@ -98,10 +95,10 @@ export default class Manager {
         }
 
         // if user left a game by quitting the session or in game action (resign)
-        let game = this.games.find((game) => game.hasUser(user));
+        let game = this.games.find((game) => game.hasUser(user.ID));
         if (!game || game.STATUS === "END") return;
-        game.endedBy(user);
-        this.games = this.games.filter((cur) => cur === game);
+        game.endedBy(user.ID);
+        this.games = this.games.filter((g) => g.ID !== game.ID);
         return "user disconnected, match ended";
     }
 }

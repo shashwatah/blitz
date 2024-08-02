@@ -1,15 +1,18 @@
 import WebSocket from "ws";
 import { Chess, Move } from "chess.js";
 
+import User from "./user";
 import Player from "./player";
 
 import { GameStatus, GameType, PlayerColor, PlayerNum } from "../bin/types";
 import { MOVE, RESIGN } from "../bin/messages";
+import { genRandomStr } from "../bin/helpers";
 
 // currently using tell, listen, tellOther and tellBoth as names for socket comms, might change later.
 // redundant data? : game type, player num
 
 export default class Game { 
+    private id: string;
     private type: GameType;
     private status: GameStatus;
     private playerOne: Player;
@@ -18,13 +21,14 @@ export default class Game {
     private turn: PlayerNum;
     // private moves: Array<Move>
 
-    constructor(type: GameType, p1Socket: WebSocket, p2Socket: WebSocket) {
+    constructor(type: GameType, userOne: User, userTwo: User) {
         let [p1Color, p2Color] = this.rngColor();
 
+        this.id = genRandomStr();
         this.type = type;
         this.status = "ACTIVE";
-        this.playerOne = new Player(p1Socket, "ONE", p1Color);
-        this.playerTwo = new Player(p2Socket, "TWO", p2Color);
+        this.playerOne = new Player(userOne, "ONE", p1Color);
+        this.playerTwo = new Player(userTwo, "TWO", p2Color);
         this.chess = new Chess();
         this.turn = p1Color === "WHITE" ? "ONE" : "TWO"; // manage this using chess.js or color?
 
@@ -118,23 +122,27 @@ export default class Game {
         this.playerTwo.tell(message);
     }
 
-    endedBy(user: WebSocket) {
+    endedBy(userID: string) {
         let message = `[game]: opp has ${this.status === "RESIGNED" ? "resigned" : "left"}, game has ended`;
         this.status = "END";
         [this.playerOne, this.playerTwo].forEach((player) => {
-            if (player.isUser(user)) return;
+            if (userID === player.ID) return;
             player.tell(message);
             player.exit();
         });
     }
 
-    hasUser(user: WebSocket): boolean {
-        if (this.playerOne.isUser(user)) return true;
-        if (this.playerTwo.isUser(user)) return true;
+    hasUser(userID: string): boolean {
+        if (userID === this.playerOne.ID) return true;
+        if (userID === this.playerTwo.ID) return true;
         return false;
     }
 
-    get STATUS() {
+    get ID(): string {
+        return this.id;
+    }
+
+    get STATUS(): GameStatus {
         return this.status;
     }
 }
