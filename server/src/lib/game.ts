@@ -13,29 +13,26 @@ import { genRandomStr } from "../bin/helpers";
 
 export default class Game { 
     private id: string;
-    private type: GameType;
     private status: GameStatus;
-    private playerOne: Player;
-    private playerTwo: Player;
+    private players: Player[];
     private chess: Chess;
-    // private moves: Array<Move>
+    // private type: GameType;      // might need it later
+    // private moves: Array<Move>   // move history
 
     constructor(type: GameType, userOne: User, userTwo: User) {
-        let [p1Color, p2Color] = this.rngColor();
+        let [color1, color2] = this.rngColor();
 
         this.id = genRandomStr();
-        this.type = type;
         this.status = "ACTIVE";
-        this.playerOne = new Player(userOne, p1Color);
-        this.playerTwo = new Player(userTwo, p2Color);
+        this.players = [new Player(userOne, color1), new Player(userTwo, color2)];
         this.chess = new Chess();
 
         this.tellBoth(`[game]: both players connected, game has begun`);
         this.tellOne("w", "[game]: you are assigned white. it's your turn");
         this.tellOne("b", "[game]: you are assigned black. it's opp's turn");
 
-        this.listen(this.playerOne);
-        this.listen(this.playerTwo);
+        this.listen(this.players[0]);
+        this.listen(this.players[1]);
     }
 
     private rngColor(): [Color, Color] {
@@ -99,20 +96,20 @@ export default class Game {
     }   
 
     private tellOne(color: Color, message: string) {
-        [this.playerOne, this.playerTwo].forEach((player) => {
+        this.players.forEach((player) => {
             if (player.COLOR === color) player.tell(message);
         });
     }
 
     private tellBoth(message: string) {
-        this.playerOne.tell(message);
-        this.playerTwo.tell(message);
+        this.players[0].tell(message);
+        this.players[1].tell(message);
     }
 
     endedBy(userID: string) {
         let message = `[game]: opp has ${this.status === "RESIGNED" ? "resigned" : "left"}, game has ended`;
         this.status = "END";
-        [this.playerOne, this.playerTwo].forEach((player) => {
+        this.players.forEach((player) => {
             if (userID === player.ID) return;
             player.tell(message);
             player.exit();
@@ -120,8 +117,8 @@ export default class Game {
     }
 
     hasUser(userID: string): boolean {
-        if (userID === this.playerOne.ID) return true;
-        if (userID === this.playerTwo.ID) return true;
+        if (userID === this.players[0].ID) return true;
+        if (userID === this.players[1].ID) return true;
         return false;
     }
 
