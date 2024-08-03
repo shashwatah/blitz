@@ -4,7 +4,7 @@ import { Chess, Color, Move } from "chess.js";
 import User from "./user";
 import Player from "./player";
 
-import { GameStatus, GameType } from "../bin/types";
+import { GameStatus } from "../bin/types";
 import { MOVE, RESIGN } from "../bin/messages";
 import { genRandomStr } from "../bin/helpers";
 
@@ -19,7 +19,7 @@ export default class Game {
     // private type: GameType;      // might need it later
     // private moves: Array<Move>   // move history
 
-    constructor(type: GameType, userOne: User, userTwo: User) {
+    constructor(userOne: User, userTwo: User) {
         let [color1, color2] = this.rngColor();
 
         this.id = genRandomStr();

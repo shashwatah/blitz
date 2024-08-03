@@ -16,10 +16,10 @@ wss.on("connection", (socket: WebSocket, req: IncomingMessage) => {
 
     let user = new User({socket});
     // this will always be true since path has already been validated before conn upgrade
-    let roomInfo = req.url ? splitPath(req.url) : [];
+    let reqGame = req.url ? splitPath(req.url) : [];
     
     // path[2] can be undefined but path[1] will never be undefined for reason spec. above
-    let message = manager.manageEntry(user, {type: roomInfo[1], code: roomInfo[2]});
+    let message = manager.manageEntry(user, {type: reqGame[1], code: reqGame[2]});
     if (message) console.log("[ws]:", message);
 
     socket.on("close", () => {

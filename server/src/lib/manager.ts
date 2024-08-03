@@ -2,11 +2,6 @@ import Game from "./game"
 import User from "./user";
 
 import { genRandomStr } from "../bin/helpers";
-// User & Player:
-//      currently a websocket connection is being treated as a user which gets added into a player
-//      user will eventually be a class of its own, holding socket (& its methods) & data (id, name etc)
-//      this object will be passed around in enter and exit funcs, enabling user checks with id
-//      this user will eventually get promoted to the player class which extends it, holding data specific to the game its in
 
 // Game End:
 //      currently the game ends with game.endedBy func call when a player exits.
@@ -29,22 +24,21 @@ export default class Manager {
         }
     }
     
-
     private get GAMESN(): number {
         return this.games.length
     }
 
     // create/join public or private game based on url.
-    manageEntry(user: User, room: {type: string, code?: string}): string | undefined {
+    manageEntry(user: User, reqGame: {type: string, code?: string}): string | undefined {
         // PUBLIC GAME
-        if (room.type === "public") {
+        if (reqGame.type === "public") {
             if (!this.waiting.public) {
                 this.waiting.public = user;
                 user.tell("[game]: connected, waiting for another player to join");
                 return;
             }
     
-            let game = new Game("PUBLIC", this.waiting.public, user);
+            let game = new Game(this.waiting.public, user);
             this.games.push(game);
             this.waiting.public = undefined;
 
@@ -52,9 +46,9 @@ export default class Manager {
         }
 
         // PRIVATE GAME
-        if (room.type === "private") {
+        if (reqGame.type === "private") {
             // CREATE PRIVATE GAME
-            if (!room.code) {
+            if (!reqGame.code) {
                 let code = genRandomStr();
                 this.waiting.private[code] = user;
 
@@ -63,16 +57,16 @@ export default class Manager {
             }
 
             // JOIN PRIVATE GAME
-            if (!(room.code in this.waiting.private)) {
+            if (!(reqGame.code in this.waiting.private)) {
                 user.tell("[server]: no game found with this code");
                 user.exit();
                 return;
             }
             
             // add code to game later?
-            let game = new Game("PRIVATE", this.waiting.private[room.code], user);
+            let game = new Game(this.waiting.private[reqGame.code], user);
             this.games.push(game);
-            delete this.waiting.private[room.code];
+            delete this.waiting.private[reqGame.code];
             
             return `private game started; active games: ${this.GAMESN}`;
         }
