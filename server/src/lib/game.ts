@@ -1,10 +1,10 @@
 import WebSocket from "ws";
-import { Chess, Move } from "chess.js";
+import { Chess, Color, Move } from "chess.js";
 
 import User from "./user";
 import Player from "./player";
 
-import { GameStatus, GameType, PlayerColor, PlayerNum } from "../bin/types";
+import { GameStatus, GameType } from "../bin/types";
 import { MOVE, RESIGN } from "../bin/messages";
 import { genRandomStr } from "../bin/helpers";
 
@@ -18,7 +18,6 @@ export default class Game {
     private playerOne: Player;
     private playerTwo: Player;
     private chess: Chess;
-    private turn: PlayerNum;
     // private moves: Array<Move>
 
     constructor(type: GameType, userOne: User, userTwo: User) {
@@ -27,27 +26,22 @@ export default class Game {
         this.id = genRandomStr();
         this.type = type;
         this.status = "ACTIVE";
-        this.playerOne = new Player(userOne, "ONE", p1Color);
-        this.playerTwo = new Player(userTwo, "TWO", p2Color);
+        this.playerOne = new Player(userOne, p1Color);
+        this.playerTwo = new Player(userTwo, p2Color);
         this.chess = new Chess();
-        this.turn = p1Color === "WHITE" ? "ONE" : "TWO"; // manage this using chess.js or color?
 
         this.tellBoth(`[game]: both players connected, game has begun`);
-        this.tellActive("[game]: you are assigned white. it's your turn");
-        this.tellInactive("[game]: you are assigned black. it's opp's turn");
+        this.tellOne("w", "[game]: you are assigned white. it's your turn");
+        this.tellOne("b", "[game]: you are assigned black. it's opp's turn");
 
         this.listen(this.playerOne);
         this.listen(this.playerTwo);
     }
 
-    private rngColor(): [PlayerColor, PlayerColor] {
+    private rngColor(): [Color, Color] {
         return Math.random() < 0.5 ? 
-            ["WHITE", "BLACK"] : 
-            ["BLACK", "WHITE"];
-    }
-
-    private toggleTurn() {
-        this.turn = this.turn === "ONE" ? "TWO" : "ONE";
+            ["w", "b"] : 
+            ["b", "w"];
     }
 
     private listen(player: Player) {
@@ -63,7 +57,7 @@ export default class Game {
 
             // RESIGN
             // can be done out of turn
-            // later, also handle draw & abort
+            // msg: {"type": "resign"}
             if (message.type === RESIGN) {
                 this.status = "RESIGNED";
                 player.tell("[game]: you have resigned, game has ended");
@@ -72,7 +66,7 @@ export default class Game {
          
             // checking if the player sending the message is in turn
             // will check with player id or color (wrt chess.js) later
-            if (player.NUM !== this.turn) {
+            if (player.COLOR !== this.chess.turn()) {
                 player.tell("[game]: not your turn");
                 return;
             }
@@ -94,10 +88,9 @@ export default class Game {
                 
                 let moveMsg = `moved ${move.piece} from ${move.from} to ${move.to}`;
                 player.tell(`[you]: ${moveMsg}`);
-                this.tellInactive(`[opp]: ${moveMsg}`);
+                this.tellOne(player.COLOR === "w" ? "b" : "w", `[opp]: ${moveMsg}`);
                 this.tellBoth(`[game]: board: \n${this.chess.ascii()}`);
 
-                this.toggleTurn();
                 return;
             }
 
@@ -105,16 +98,10 @@ export default class Game {
         });
     }   
 
-    private tellActive(message: string) {
-        this.turn === "ONE" ?
-            this.playerOne.tell(message) :
-            this.playerTwo.tell(message);
-    }
-
-    private tellInactive(message: string) {
-        this.turn !== "ONE" ?
-            this.playerOne.tell(message) :
-            this.playerTwo.tell(message);
+    private tellOne(color: Color, message: string) {
+        [this.playerOne, this.playerTwo].forEach((player) => {
+            if (player.COLOR === color) player.tell(message);
+        });
     }
 
     private tellBoth(message: string) {

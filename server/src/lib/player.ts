@@ -1,22 +1,19 @@
+import { Color } from "chess.js";
 import User from "./user";
 
-import { PlayerColor, PlayerNum } from "../bin/types";
-
 export default class Player extends User {
-    private number: PlayerNum;
-    private color: PlayerColor;
+    private color: Color;
     private timer: string;
     private capPieces: [];
 
-    constructor(user: User, number: PlayerNum, color: PlayerColor) {
+    constructor(user: User, color: Color) {
         super(user);
-        this.number = number;
         this.color = color;
         this.timer = "3:00";
         this.capPieces = [];
     }
     
-    get NUM(): PlayerNum {
-        return this.number
+    get COLOR(): Color {
+        return this.color;
     }
 }

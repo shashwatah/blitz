@@ -1,5 +1,4 @@
 import WebSocket from "ws";
-
 import { genRandomStr } from "../bin/helpers";
 
 export default class User {
