@@ -4,26 +4,21 @@
     import Chessboard from "$lib/components/game/ChessBoard.svelte";
     import GameSetup from "$lib/components/GameSetup.svelte";
     
-    import { game } from "$lib/game.stores";
+    import game from "$lib/game";
 
     let chessboardPos: "default" | "pulled" = "default";
-    let loader: NodeJS.Timeout | undefined;
 
-    // will get fixed with game.stores.js
-    function loadGame(event: CustomEvent) {
+    function connect(event: CustomEvent) {
         console.log(`type: ${event.detail.type}, mode: ${event.detail.mode}`);
-        $game.connect(event.detail.type, event.detail.mode === "JOIN" ? "sdfsdf" : undefined);
-
-        $game.status.subscribe((val) => {
-            if (val === "ACTIVE") {
-                goto("/game")
-            }
+        
+        game.connect(event.detail.type, event.detail.mode === "JOIN" ? "sdfsdf" : undefined);
+        game.STATUS.subscribe((status) => {
+            if (status === "ACTIVE") goto("/game");
         })
     }
 
-    // doesn't do anything atm
-    function cancelGameLoad() {
-        if (loader) clearTimeout(loader);
+    function disconnect() {
+        game.disconnect();
     }
 </script>
 
@@ -31,8 +26,8 @@
     <GameSetup 
         on:select={() => {chessboardPos = "pulled"}} 
         on:unselect={() => {chessboardPos = "default"}} 
-        on:finish={loadGame} 
-        on:cancel={cancelGameLoad}
+        on:finish={connect} 
+        on:cancel={disconnect}
     />
 </div>
 
@@ -67,4 +62,4 @@
     .chessboard-pos-pulled {
         bottom: -45vw;
     }
-</style>
+</style> 

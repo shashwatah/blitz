@@ -1,17 +1,14 @@
 <script lang="ts">
-    import { game } from "$lib/game.stores";
     import pieceSVG from "../../svg.data";
 
-    let color = "w";
+    import game from "$lib/game";
 
-    $game.userColor.subscribe((val) => {
-        color = val;
-    })
+    let chess = game.CHESS;
+    let color = game.COLOR;
 </script>
 
-
-<div id="chessboard" class="chessboard-{color}">
-    {#each $game.BOARD as row, i}
+<div id="chessboard" class="chessboard-{$color}">
+    {#each $chess.board() as row, i}
         <div class="chessboard-row">
             {#each row as block, j}
                 <div class="chessboard-block {(i+j) % 2 === 0 ? "white" : "black"}-chessboard-block">

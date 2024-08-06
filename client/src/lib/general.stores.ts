@@ -1,5 +1,4 @@
 import { readable, type Readable} from "svelte/store";
-
 import { page } from "$app/stores";
 
 import type { Page } from "./general.types";
