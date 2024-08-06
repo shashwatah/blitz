@@ -1,6 +1,6 @@
 <script>
     import TopBar from "$lib/components/TopBar.svelte";
-    import { currentPage } from "$lib/stores/general.stores";
+    import { currentPage } from "$lib/general.stores";
 </script>
 
 <div id="topbar-container" class="{$currentPage === "GAME" ? "in-game" : "not-in-game"}">

@@ -1,7 +1,4 @@
 <script lang="ts">
-    // refactored but still a bit makeshifty
-    // no idea how media queries are going to work on this
-
     import { fade } from "svelte/transition";
 
     import Chessboard from "$lib/components/game/ChessBoard.svelte";
@@ -10,33 +7,31 @@
     import PlayerStatus from "$lib/components/game/PlayerStatus.svelte";
     import MoveBoard from "$lib/components/game/MoveBoard.svelte";
     
-    import type { Player } from "$lib/types/general.types";
-    import { Color } from "$lib/types/general.types";
-    import { ChessBoardPos } from "$lib/types/chessBoard";
+    import type { Player } from "$lib/general.types";
 
-    let currentChessboardPos: ChessBoardPos = ChessBoardPos.Pulled;
+    let chessboardPos: "pulled" | "center" = "pulled";
     let chessboardRendered: boolean = false;
 
     let playerOne: Player = {
         name: "dedcliff",
         isOne: true,
         isActive: true,
-        color: Color.Black,
+        color: "b",
         timer: "2:57",
-        capturedPieces: ["king", "pawn", "pawn", "rook", "bishop", "queen"]
+        capturedPieces: ["k", "p", "p", "r", "b", "q"]
     };
 
     let playerTwo: Player = {
         name: "guest_514",
         isOne: false,
         isActive: false,
-        color: Color.White,
+        color: "b",
         timer: "2:45",
-        capturedPieces: ["pawn", "knight", "pawn"]
+        capturedPieces: ["p", "k", "p"]
     };
 
     setTimeout(() => {
-        currentChessboardPos = ChessBoardPos.Center;
+        chessboardPos = "center";
         chessboardRendered = true;
     }, 0);
 </script>
@@ -55,8 +50,8 @@
     </div> 
 {/if}
    
-<div id="chessboard-container" class="chessboard-pos-{currentChessboardPos}">
-    <Chessboard p1Color={Color.Black} p2Color={Color.White}/>
+<div id="chessboard-container" class="chessboard-pos-{chessboardPos}">
+    <Chessboard />
 </div>
 
 {#if chessboardRendered}

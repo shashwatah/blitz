@@ -1,6 +1,6 @@
 <script lang="ts">
-    import type { Player } from "../../types/general.types";
-    import { chessPieces } from "$lib/data/chessPieces";
+    import type { Player } from "$lib/general.types";   
+    import pieceSVG from "$lib/svg.data";
 
     export let player: Player;
 </script>
@@ -18,7 +18,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" 
                     class="captured-piece {player.color} {player.capturedPieces.length > 5 ? "ext" : ""}"> 
                     <!-- "ext" class needs better name -->
-                    {@html chessPieces[piece].svg}
+                    {@html pieceSVG[piece]}
                 </svg>
             {/each}
             {player.capturedPieces.length > 5 ? `+${player.capturedPieces.length - 5}`  : ""}

@@ -2,7 +2,7 @@
     import { createEventDispatcher } from "svelte";
     const dispatch = createEventDispatcher();
 
-    import type { GameType, ConnMode } from "$lib/types/general.types";
+    import type { GameType, ConnMode } from "$lib/general.types";
 
     let selectedGameType: GameType = undefined;
     let selectedConnMode: ConnMode = undefined; 

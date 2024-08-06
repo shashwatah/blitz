@@ -1,94 +1,24 @@
 <script lang="ts">
-    // chessboard should be a writable store created using a chessboard class 
-    // chesspieces data should be a readable store
-    // rn chess pieces are being created and store within chessboard
-    // |- ideally chess pieces should have their own state (or player state)
-    // code is still slightly janky (need to reduce verbosity of names, overuse of "chess") 
-    // |- but a major improvement, can work on top of this now. 
+    import { game } from "$lib/game.stores";
+    import pieceSVG from "../../svg.data";
 
-    //data
-    import type { ChessBlock, ChessBlockNotation, ChessBoard } from "../../types/chessBoard";
-    import { Color } from "../../types/general.types";
-   
-    import { chessPieces } from "../../data/chessPieces";
-    
-    export let p1Color: Color;
-    export let p2Color: Color;
+    let color = "w";
 
-    // main functions 
-    function createChessBoard(): ChessBoard {
-        let arr: ChessBlock[][] = [];
-        for(let i = 0; i <= 7; i++) {  
-            let subArr: ChessBlock[] = []
-            for(let j = 0; j <= 7; j++) {
-                subArr.push({
-                    loc: {
-                        row: i,
-                        col: j
-                    }
-                })
-            } 
-            arr.push(subArr);
-        } 
-        return arr;
-    }
-
-    function populateChessBoard(chessBoard: ChessBoard) {
-        populatePlayer(chessBoard, false);
-        populatePlayer(chessBoard, true);
-    }
-
-    function populatePlayer(chessBoard: ChessBoard, isOpponent: boolean) {
-        for(let name in chessPieces) {
-            let chessPiece = chessPieces[name];
-            for(let i = 0; i < chessPiece.initCol.length; i++) {
-                let row = isOpponent ? chessPiece.initRow-1 : Math.abs(chessPiece.initRow-8) ;
-                chessBoard[row][chessPiece.initCol[i]-1].piece = {
-                    name,
-                    isOpponent
-                };
-            }
-        }
-    }
-    
-    // aux functions 
-    function getBlockColor(chessBlock: ChessBlock): string {
-        if ((chessBlock.loc.row + chessBlock.loc.col) % 2 === 0) {
-            return "white";
-        } else {
-            return "black";
-        }
-    }
-
-    function getBlockNotation(chessBlock: ChessBlock): ChessBlockNotation{
-        return {
-            row: chessBlock.loc.row,
-            col: String.fromCharCode(chessBlock.loc.col+97)
-        };
-    }
-
-    function getChessPieceColor(chessBlock: ChessBlock): string {
-        if (chessBlock.piece?.isOpponent) {
-            return p2Color;
-        } else {
-            return p1Color;
-        }
-    }
-
-
-    let chessBoard: ChessBoard = createChessBoard();
-    populateChessBoard(chessBoard);
+    $game.userColor.subscribe((val) => {
+        color = val;
+    })
 </script>
 
-<div id="chessboard">
-    {#each chessBoard as row}
+
+<div id="chessboard" class="chessboard-{color}">
+    {#each $game.BOARD as row, i}
         <div class="chessboard-row">
-            {#each row as block}
-                <div class="chessboard-block {getBlockColor(block)}-chessboard-block">
-                    {#if block?.piece}
+            {#each row as block, j}
+                <div class="chessboard-block {(i+j) % 2 === 0 ? "white" : "black"}-chessboard-block">
+                    {#if block !== null}
                         <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" 
-                            class="chess-piece {getChessPieceColor(block)}-chess-piece">
-                            {@html chessPieces[block.piece.name].svg}
+                            class="chess-piece {block.color === "w" ? "white" : "black"}-chess-piece">
+                            {@html pieceSVG[block.type]}
                         </svg>
                     {/if}
                 </div>
@@ -102,6 +32,15 @@
         border: 2px solid #d1d1d1;
         height: 100%;
         width: 100%;
+        display: flex;
+    }
+
+    .chessboard-w {
+        flex-direction: column;
+    }
+
+    .chessboard-b {
+        flex-direction: column-reverse;
     }
     
     .chessboard-row {

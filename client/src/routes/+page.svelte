@@ -3,17 +3,25 @@
     
     import Chessboard from "$lib/components/game/ChessBoard.svelte";
     import GameSetup from "$lib/components/GameSetup.svelte";
-
-    import { Color } from "$lib/types/general.types";
     
+    import { game } from "$lib/game.stores";
+
     let chessboardPos: "default" | "pulled" = "default";
     let loader: NodeJS.Timeout | undefined;
 
+    // will get fixed with game.stores.js
     function loadGame(event: CustomEvent) {
         console.log(`type: ${event.detail.type}, mode: ${event.detail.mode}`);
-        loader = setTimeout(() => {goto("/game")}, 3000);
+        $game.connect(event.detail.type, event.detail.mode === "JOIN" ? "sdfsdf" : undefined);
+
+        $game.status.subscribe((val) => {
+            if (val === "ACTIVE") {
+                goto("/game")
+            }
+        })
     }
 
+    // doesn't do anything atm
     function cancelGameLoad() {
         if (loader) clearTimeout(loader);
     }
@@ -29,7 +37,7 @@
 </div>
 
 <div id="chessboard-container" class="chessboard-pos-{chessboardPos}">
-    <Chessboard p1Color={Color.White} p2Color={Color.Black}/>
+    <Chessboard />
 </div>
 
 <style>
