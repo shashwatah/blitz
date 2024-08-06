@@ -1,16 +1,12 @@
 <script>
-    export let onHomePage;
-    export let onGamePage;
+    import { currentPage } from "$lib/stores/general.stores";
 </script>
 
-<!-- hiding secondary buttons (about & rules) for now.
-     need to decide what to do with the pages. -->
-
 <div id="topbar">
-    <a href="{!onHomePage ? "/" : ""}"><img alt="Blitz Logo" id="logo" src="./logo.svg" draggable="false"/></a>
+    <a href="{$currentPage === "GAME" ? "/" : ""}"><img alt="Blitz Logo" id="logo" src="./logo.svg" draggable="false"/></a>
 
     <div id="navigation">
-        {#if onGamePage}
+        {#if $currentPage === "GAME"}
             <button id="col-btn" class="nav-btn"></button>
         {:else}
             <!-- <button class="nav-btn sec-btn" id="about-btn">about</button>

@@ -1,120 +1,100 @@
 <script lang="ts">
-    // vars and classes are not verbose anymore but might be confusing
-    // might make a legend later, good luck future me
-
     import { createEventDispatcher } from "svelte";
-    import { GameMode, PrivateGameMode, GameSetupPage } from "../types/gameSetup"
-    
     const dispatch = createEventDispatcher();
 
-    let selectedGM: GameMode = GameMode.None;
-    let selectedPGM: PrivateGameMode = PrivateGameMode.None;
-    let currentGSP: GameSetupPage = GameSetupPage.ModeSelection;
-    
-    // this will get removed later
-    let loaderTimeoutID: number = 0;
+    import type { GameType, ConnMode } from "$lib/types/general.types";
 
-    // Page Controls
-    function gotoGSP(page: GameSetupPage) {
-        currentGSP = page;
-        dispatch("page-change", {isMS: page === GameSetupPage.ModeSelection ? true : false});
+    let selectedGameType: GameType = undefined;
+    let selectedConnMode: ConnMode = undefined; 
+
+    function selectGameType(type: GameType) {
+        selectedGameType = type;
+        dispatch("select");
+        if (type === "PUBLIC") finish();
     }
 
-    function gotoMSP() { // this exists because it gets called in html too.
-        gotoGSP(GameSetupPage.ModeSelection);
+    function unselectGameType() {
+        selectedGameType = undefined;
+        dispatch("unselect");
+        unselectConnMode();
     }
 
-    // Mode Selection
-    function selectGameMode(mode: GameMode) {
-        selectedGM = mode;
-        mode === GameMode.Public ? loadGame() : gotoGSP(GameSetupPage.PrivateGameSetup);
+    function selectConnMode(mode: ConnMode) {
+        selectedConnMode = mode;
     }
 
-    function unselectGameMode() {
-        selectedGM = GameMode.None;
-        gotoMSP();
+    function unselectConnMode() {
+        selectedConnMode = undefined;
     }
 
-    // Private Game Setup
-    function selectPrivateGameMode(pgMode: PrivateGameMode) {
-        selectedPGM = pgMode;
+    let showLoader = false;
+
+    function finish() {
+        dispatch("finish", {
+            type: selectedGameType,
+            mode: selectedConnMode
+        });
+        showLoader = true;
     }
 
-    function unselectPrivateGameMode() {
-        selectedPGM = PrivateGameMode.None;
-        unselectGameMode();
-    }
-
-    // Game Load
-    function loadGame() {
-        gotoGSP(GameSetupPage.Loading);
-        loaderTimeoutID = setTimeout(() => {dispatch("goto-game")}, 3000);
-    }
-
-    function cancelGameLoad() {
-        if (loaderTimeoutID > 0) {
-            clearTimeout(loaderTimeoutID);
-            loaderTimeoutID = 0;
-        }
-
-        unselectPrivateGameMode();
-        unselectGameMode();
+    function cancel() {
+        dispatch("cancel");
+        unselectGameType();
+        showLoader = false;
     }
 </script>
 
-
-{#if currentGSP === GameSetupPage.ModeSelection}
+{#if showLoader} 
+    <div id="gl-container" class="sr-container">
+        <button id="gl-cancel-btn" class="std-btn cancel-btn f-left" on:click={cancel}>X</button>
+        <button id="gl-msg" class="msg-box f-right ft-roboto">
+            loading {selectedGameType === "PUBLIC" ? "public" : "private"} game...
+        </button> 
+    </div>
+{:else if !selectedGameType}
     <div id="gm-sel-container" class="sr-container">
         <button id="public-gm-sel-btn" class="gm-sel-btn std-btn f-left ft-roboto"
-            on:click="{() => {selectGameMode(GameMode.Public)}}">
+            on:click="{() => {selectGameType("PUBLIC")}}">
             public game
         </button>
         <button id="private-gm-sel-btn" class="gm-sel-btn std-btn f-right ft-roboto"
-            on:click="{() => {selectGameMode(GameMode.Private)}}">
+            on:click="{() => {selectGameType("PRIVATE")}}">
             private game
         </button>       
     </div>
-{:else if currentGSP === GameSetupPage.Loading}
-    <div id="gl-container" class="sr-container">
-        <button id="gl-cancel-btn" class="std-btn cancel-btn f-left" on:click={cancelGameLoad}>X</button>
-        <button id="gl-msg" class="msg-box f-right ft-roboto">
-            loading {selectedGM === GameMode.Public ? "public" : "private"} game...
-        </button> 
-    </div>
-{:else if currentGSP === GameSetupPage.PrivateGameSetup && selectedGM === GameMode.Private} <!-- redundant? -->
-    {#if selectedPGM === PrivateGameMode.None}
+{:else if selectedGameType === "PRIVATE"}
+    {#if !selectedConnMode}
         <div id="pgm-sel-container" class="sr-container">
-            <button id="pgm-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectGameMode}>X</button>
+            <button id="pgm-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectGameType}>X</button>
             <button id="pgm-join-btn" class="pgm-sel-btn std-btn sr-wcb-el sr-wcb-el-left ft-roboto"
-                on:click={() => {selectPrivateGameMode(PrivateGameMode.Join)}}>
+                on:click={() => {selectConnMode("JOIN")}}>
                 join game
             </button>
             <button id="pgm-create-btn" class="pgm-sel-btn std-btn sr-wcb-el sr-wcb-el-right ft-roboto"
-                on:click={() => {selectPrivateGameMode(PrivateGameMode.Create)}}>
+                on:click={() => {selectConnMode("CREATE")}}>
                 create game
             </button>
         </div>
-    {:else if selectedPGM === PrivateGameMode.Join}
+    {:else if selectedConnMode === "JOIN"}
         <div id="pgm-join-container" class="sr-container">
-            <button id="pgmj-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectPrivateGameMode}>X</button>
+            <button id="pgmj-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectConnMode}>X</button>
             <input id="pgmj-code-input" class="sr-wcb-el sr-wcb-el-left ft-roboto" type="text" placeholder="game code" maxlength="6"/>
-            <button id="pgmj-join-btn" class="std-btn sr-wcb-el sr-wcb-el-right ft-roboto" on:click={loadGame}>join game</button>
+            <button id="pgmj-join-btn" class="std-btn sr-wcb-el sr-wcb-el-right ft-roboto" on:click={finish}>join game</button>
         </div>
     {:else}
         <div id="pgm-create-container" class="dr-container">
             <div id="pgmc-top-container" class="dr-row-container">
-                <button id="pgmc-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectPrivateGameMode}>X</button>
+                <button id="pgmc-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectConnMode}>X</button>
                 <button id="pgmc-code-box" class="msg-box ft-roboto">que-ere-fdq</button>
                 <button id="pgmc-copy-btn" class="ft-roboto">copy</button>
             </div>       
             <div id="pgmc-bot-container" class="dr-row-container">
                 <button id="pgmc-msg-box" class="msg-box ft-roboto f-left">player has joined!</button>
-                <button id="pgmc-start-btn" class="std-btn ft-roboto f-right" on:click={loadGame}>start game</button>
+                <button id="pgmc-start-btn" class="std-btn ft-roboto f-right" on:click={finish}>start game</button>
             </div>
         </div>   
     {/if}
 {/if}
-
 
 <style>
     /* standard elements */

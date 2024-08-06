@@ -1,3 +1,7 @@
+export type Page = "HOME" | "GAME";
+export type GameType = "PUBLIC" | "PRIVATE" | undefined;
+export type ConnMode = "JOIN" | "CREATE" | undefined; 
+
 export interface Player {
     name: string,
     isOne: boolean, // needs better name

@@ -1,13 +1,10 @@
 <script>
-    import { page } from "$app/stores";
     import TopBar from "$lib/components/TopBar.svelte";
-    
-    $: onHomePage = $page.url.pathname === "/";
-    $: onGamePage = $page.url.pathname === "/game";
+    import { currentPage } from "$lib/stores/general.stores";
 </script>
 
-<div id="topbar-container" class="{onGamePage ? "in-game" : "not-in-game"}">
-    <TopBar {onHomePage} {onGamePage}/>
+<div id="topbar-container" class="{$currentPage === "GAME" ? "in-game" : "not-in-game"}">
+    <TopBar/>
 </div>
 
 <slot></slot>

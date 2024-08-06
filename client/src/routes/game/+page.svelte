@@ -10,8 +10,8 @@
     import PlayerStatus from "$lib/components/game/PlayerStatus.svelte";
     import MoveBoard from "$lib/components/game/MoveBoard.svelte";
     
-    import type { Player } from "$lib/types/general";
-    import { Color } from "$lib/types/general";
+    import type { Player } from "$lib/types/general.types";
+    import { Color } from "$lib/types/general.types";
     import { ChessBoardPos } from "$lib/types/chessBoard";
 
     let currentChessboardPos: ChessBoardPos = ChessBoardPos.Pulled;
@@ -56,7 +56,7 @@
 {/if}
    
 <div id="chessboard-container" class="chessboard-pos-{currentChessboardPos}">
-    <Chessboard p1Color={playerOne.color} p2Color={playerTwo.color}/>
+    <Chessboard p1Color={Color.Black} p2Color={Color.White}/>
 </div>
 
 {#if chessboardRendered}

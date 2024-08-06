@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Player } from "../../types/general";
+    import type { Player } from "../../types/general.types";
     import { chessPieces } from "$lib/data/chessPieces";
 
     export let player: Player;

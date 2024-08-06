@@ -8,7 +8,7 @@
 
     //data
     import type { ChessBlock, ChessBlockNotation, ChessBoard } from "../../types/chessBoard";
-    import { Color } from "../../types/general";
+    import { Color } from "../../types/general.types";
    
     import { chessPieces } from "../../data/chessPieces";
     
