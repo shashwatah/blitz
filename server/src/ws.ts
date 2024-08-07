@@ -4,7 +4,7 @@ import WebSocket from "ws";
 import Manager from "./lib/manager";
 import User from "./lib/user";
 
-import { splitPath } from "./bin/helpers";
+import { splitPath } from "./utils/helpers";
 
 const wss: WebSocket.Server = new WebSocket.Server({ noServer: true }); 
 

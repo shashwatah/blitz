@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import router from "./router";
 import wss from "./ws"
 
-import { validateGamePath } from "./bin/helpers";
+import { validateGamePath } from "./utils/helpers";
 
 dotenv.config();
 

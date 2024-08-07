@@ -1,5 +1,5 @@
 import WebSocket from "ws";
-import { genRandomStr } from "../bin/helpers";
+import { genRandomStr } from "../utils/helpers";
 
 export default class User {
     protected socket: WebSocket;
