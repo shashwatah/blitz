@@ -1,6 +1,6 @@
 <script lang="ts">
-    import type { Player } from "$lib/general.types";   
-    import pieceSVG from "$lib/svg.data";
+    import type { Player } from "$lib/types/general";   
+    import pieceSVG from "$lib/utils/svg";
 
     export let player: Player;
 </script>

@@ -2,10 +2,14 @@
     import { createEventDispatcher } from "svelte";
     const dispatch = createEventDispatcher();
 
-    import type { GameType, ConnMode } from "$lib/general.types";
+    import type { GameType, ConnMode } from "$lib/types/general";
+
+    export let setupReset: boolean;
+    $: if (setupReset) reset();
 
     let selectedGameType: GameType = undefined;
     let selectedConnMode: ConnMode = undefined; 
+    let gameCode = "";
 
     function selectGameType(type: GameType) {
         selectedGameType = type;
@@ -24,6 +28,7 @@
     }
 
     function unselectConnMode() {
+        if (selectedConnMode === "JOIN") gameCode = "";
         selectedConnMode = undefined;
     }
 
@@ -32,13 +37,17 @@
     function finish() {
         dispatch("finish", {
             type: selectedGameType,
-            mode: selectedConnMode
+            code: gameCode
         });
         showLoader = true;
     }
 
     function cancel() {
         dispatch("cancel");
+        reset();
+    }
+
+    function reset() {
         unselectGameType();
         showLoader = false;
     }
@@ -78,10 +87,12 @@
     {:else if selectedConnMode === "JOIN"}
         <div id="pgm-join-container" class="sr-container">
             <button id="pgmj-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectConnMode}>X</button>
-            <input id="pgmj-code-input" class="sr-wcb-el sr-wcb-el-left ft-roboto" type="text" placeholder="game code" maxlength="6"/>
+            <input id="pgmj-code-input" class="sr-wcb-el sr-wcb-el-left ft-roboto" type="text" placeholder="game code" maxlength="8" bind:value={gameCode}/>
             <button id="pgmj-join-btn" class="std-btn sr-wcb-el sr-wcb-el-right ft-roboto" on:click={finish}>join game</button>
         </div>
     {:else}
+        <!-- the game starts on its now (backend) rather than waiting for player one to start it 
+             will have to change this later. for now: click on start game to wait for opponent-->
         <div id="pgm-create-container" class="dr-container">
             <div id="pgmc-top-container" class="dr-row-container">
                 <button id="pgmc-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectConnMode}>X</button>

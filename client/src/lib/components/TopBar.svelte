@@ -1,5 +1,5 @@
 <script>
-    import { currentPage } from "$lib/general.stores";
+    import { currentPage } from "$lib/stores/general";
 </script>
 
 <div id="topbar">

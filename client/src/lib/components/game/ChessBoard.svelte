@@ -1,20 +1,29 @@
 <script lang="ts">
-    import pieceSVG from "../../svg.data";
+    import type { Color } from "chess.js";
+    
+    import game from "$lib/controllers/game";
+    
+    import pieceSVG from "../../utils/svg";
 
-    import game from "$lib/game";
-
+    // only HOME and GAME are supposed to use the game controller
+    // this is exists only until i start working on GAME
     let chess = game.CHESS;
-    let color = game.COLOR;
+    let color: Color;
+    game.COLOR.subscribe((c) => {
+        color = c ? c : "w";
+    });
+    // currently directly using chess.js' color type (w, b) like on the backend
+    // do i need to change this??
 </script>
 
-<div id="chessboard" class="chessboard-{$color}">
+<div id="chessboard" class="chessboard-{color}">
     {#each $chess.board() as row, i}
         <div class="chessboard-row">
             {#each row as block, j}
-                <div class="chessboard-block {(i+j) % 2 === 0 ? "white" : "black"}-chessboard-block">
+                <div class="chessboard-block {(i+j) % 2 === 0 ? "w" : "b"}-chessboard-block">
                     {#if block !== null}
                         <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" 
-                            class="chess-piece {block.color === "w" ? "white" : "black"}-chess-piece">
+                            class="chess-piece {block.color}-chess-piece">
                             {@html pieceSVG[block.type]}
                         </svg>
                     {/if}
@@ -53,11 +62,11 @@
         text-align: center;
     }
 
-    .white-chessboard-block {
+    .w-chessboard-block {
         background: #fff;
     }
 
-    .black-chessboard-block {
+    .b-chessboard-block {
         background: #efefef;
     }
 
@@ -70,11 +79,11 @@
         stroke-width: .4px;
     }
 
-    .white-chess-piece {
+    .w-chess-piece {
         fill: #fff;
     }
 
-    .black-chess-piece {
+    .b-chess-piece {
         fill: #a2a2a2;
     }
 </style>

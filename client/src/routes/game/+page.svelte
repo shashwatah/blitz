@@ -7,7 +7,7 @@
     import PlayerStatus from "$lib/components/game/PlayerStatus.svelte";
     import MoveBoard from "$lib/components/game/MoveBoard.svelte";
     
-    import type { Player } from "$lib/general.types";
+    import type { Player } from "$lib/types/general";
 
     let chessboardPos: "pulled" | "center" = "pulled";
     let chessboardRendered: boolean = false;

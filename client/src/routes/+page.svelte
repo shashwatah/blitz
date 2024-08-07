@@ -4,15 +4,15 @@
     import Chessboard from "$lib/components/game/ChessBoard.svelte";
     import GameSetup from "$lib/components/GameSetup.svelte";
     
-    import game from "$lib/game";
+    import game from "$lib/controllers/game";
 
     let chessboardPos: "default" | "pulled" = "default";
+    let setupReset = false;
 
     function connect(event: CustomEvent) {
-        console.log(`type: ${event.detail.type}, mode: ${event.detail.mode}`);
-        
-        game.connect(event.detail.type, event.detail.mode === "JOIN" ? "sdfsdf" : undefined);
+        game.connect(event.detail.type, event.detail.code);
         game.STATUS.subscribe((status) => {
+            if (status === "RESET") setupReset = true;
             if (status === "ACTIVE") goto("/game");
         })
     }
@@ -28,6 +28,7 @@
         on:unselect={() => {chessboardPos = "default"}} 
         on:finish={connect} 
         on:cancel={disconnect}
+        setupReset={setupReset}
     />
 </div>
 
