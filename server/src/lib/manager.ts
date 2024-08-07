@@ -1,7 +1,9 @@
 import Game from "./game"
 import User from "./user";
 
-import { genRandomStr } from "../bin/helpers";
+import { genRandomStr } from "../utils/helpers";
+import { WAITING, ERROR } from "../utils/messages";
+import { BADCODE } from "../utils/messages";
 
 // Game End:
 //      currently the game ends with game.endedBy func call when a player exits.
@@ -28,13 +30,14 @@ export default class Manager {
         return this.games.length
     }
 
+    // use some kind of logger instead of returning msgs to ws?
     // create/join public or private game based on url.
     manageEntry(user: User, reqGame: {type: string, code?: string}): string | undefined {
         // PUBLIC GAME
         if (reqGame.type === "public") {
             if (!this.waiting.public) {
                 this.waiting.public = user;
-                user.tell("[game]: connected, waiting for another player to join");
+                user.tell(JSON.stringify({type: WAITING}));
                 return;
             }
     
@@ -52,13 +55,13 @@ export default class Manager {
                 let code = genRandomStr();
                 this.waiting.private[code] = user;
 
-                user.tell(`[game]: game code: ${code}, waiting for opponent`);
+                user.tell(JSON.stringify({type: WAITING, code: code}));
                 return "private game created; waiting for second player.";
             }
 
             // JOIN PRIVATE GAME
             if (!(reqGame.code in this.waiting.private)) {
-                user.tell("[server]: no game found with this code");
+                user.tell(JSON.stringify({type: ERROR, error: BADCODE}));
                 user.exit();
                 return;
             }

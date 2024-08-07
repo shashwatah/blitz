@@ -4,9 +4,10 @@ import { Chess, Color, Move } from "chess.js";
 import User from "./user";
 import Player from "./player";
 
-import { GameStatus } from "../bin/types";
-import { MOVE, RESIGN } from "../bin/messages";
-import { genRandomStr } from "../bin/helpers";
+import { GameStatus } from "../utils/types";
+import { MOVE, RESIGN } from "../utils/messages";
+import { START } from "../utils/messages";
+import { genRandomStr } from "../utils/helpers";
 
 // currently using tell, listen, tellOther and tellBoth as names for socket comms, might change later.
 // redundant data? : game type, player num
@@ -17,7 +18,7 @@ export default class Game {
     private players: Player[];
     private chess: Chess;
     // private type: GameType;      // might need it later
-    // private moves: Array<Move>   // move history
+    // private moves: Array<Move>   // move history, chess.history??
 
     constructor(userOne: User, userTwo: User) {
         let [color1, color2] = this.rngColor();
@@ -27,9 +28,9 @@ export default class Game {
         this.players = [new Player(userOne, color1), new Player(userTwo, color2)];
         this.chess = new Chess();
 
-        this.tellBoth(`[game]: both players connected, game has begun`);
-        this.tellOne("w", "[game]: you are assigned white. it's your turn");
-        this.tellOne("b", "[game]: you are assigned black. it's opp's turn");
+        // merge into one later? will have to change tell funcs
+        this.tellOne("w", JSON.stringify({type: START, data: {color: "w"}}));
+        this.tellOne("b", JSON.stringify({type: START, data: {color: "b"}}));
 
         this.listen(this.players[0]);
         this.listen(this.players[1]);
@@ -73,6 +74,23 @@ export default class Game {
             if (message.type === MOVE) {
                 // should type guards be used here?
                 let move: Move;
+
+                // chess.history, .incheck, ischeckmate, isdraw, isinsuffiecentmaterial, isstalemate, isgameover,
+                // isattacked, isthreefoldrep
+                // movenumber, moves
+                // use chess.js on frontend?
+
+                // checks:
+                //  piece belongs to the player moving?
+                //  piece promoting is a pawn?
+
+                // validation
+                // make move
+                //  return error in case: invalid move
+                // return data: 
+                //  what? should i the entirety of the current state of chessboard?
+                //  or only that the move was successfull? and move data, available moves
+
                 try {
                     move = this.chess.move({
                         from: message.data.from,
