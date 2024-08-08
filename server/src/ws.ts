@@ -19,12 +19,13 @@ wss.on("connection", (socket: WebSocket, req: IncomingMessage) => {
     let reqGame = req.url ? splitPath(req.url) : [];
     
     // path[2] can be undefined but path[1] will never be undefined for reason spec. above
-    let message = manager.manageEntry(user, {type: reqGame[1], code: reqGame[2]});
-    if (message) console.log("[ws]:", message);
+    let gameStart = manager.manageEntry(user, {type: reqGame[1], code: reqGame[2]});
+    if (gameStart) console.log(`[ws]: game started; active games: ${manager.GAMES}`);
 
     socket.on("close", () => {
-        let message = manager.manageExit(user);
-        console.log("[ws]:", message ? message : "user disconnected");
+        let gameEnd = manager.manageExit(user);
+        console.log("[ws]: user disconnected");
+        if (gameEnd) console.log(`[ws]: game ended; active games: ${manager.GAMES}`);
     });
 });
 

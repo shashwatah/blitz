@@ -2,7 +2,7 @@ import Game from "./game"
 import User from "./user";
 
 import { genRandomStr } from "../utils/helpers";
-import { WAITING, ERROR } from "../utils/messages";
+import { WAIT, ERROR } from "../utils/messages";
 import { BADCODE } from "../utils/messages";
 
 // Game End:
@@ -26,26 +26,23 @@ export default class Manager {
         }
     }
     
-    private get GAMESN(): number {
-        return this.games.length
-    }
-
     // use some kind of logger instead of returning msgs to ws?
     // create/join public or private game based on url.
-    manageEntry(user: User, reqGame: {type: string, code?: string}): string | undefined {
+    manageEntry(user: User, reqGame: {type: string, code?: string}): boolean {
         // PUBLIC GAME
         if (reqGame.type === "public") {
             if (!this.waiting.public) {
                 this.waiting.public = user;
-                user.tell(JSON.stringify({type: WAITING}));
-                return;
+                user.tell(JSON.stringify({type: WAIT}));
+                
+                return false;
             }
     
             let game = new Game(this.waiting.public, user);
             this.games.push(game);
             this.waiting.public = undefined;
 
-            return `game created; active games: ${this.GAMESN}`;
+            return true;
         }
 
         // PRIVATE GAME
@@ -55,15 +52,17 @@ export default class Manager {
                 let code = genRandomStr();
                 this.waiting.private[code] = user;
 
-                user.tell(JSON.stringify({type: WAITING, code: code}));
-                return "private game created; waiting for second player.";
+                user.tell(JSON.stringify({type: WAIT, code: code}));
+                
+                return false
             }
 
             // JOIN PRIVATE GAME
             if (!(reqGame.code in this.waiting.private)) {
                 user.tell(JSON.stringify({type: ERROR, error: BADCODE}));
                 user.exit();
-                return;
+                
+                return false;
             }
             
             // add code to game later?
@@ -71,31 +70,40 @@ export default class Manager {
             this.games.push(game);
             delete this.waiting.private[reqGame.code];
             
-            return `private game started; active games: ${this.GAMESN}`;
+            return true;
         }
+
+        return false;
     }
 
     // handle the conditions when the player was in the middle of something when leaving
-    manageExit(user: User): string | undefined {
+    manageExit(user: User): boolean {
         // if user is waiting for a public game
         if (user === this.waiting.public) {
             this.waiting.public = undefined;
-            return "user disconnected, was waiting for a public game";
+            
+            return false;
         }
 
         // if user is waiting for a private game
         for (let code in this.waiting.private) {
             if (this.waiting.private[code] === user) {
                 delete this.waiting.private[code];
-                return "user disconnected, was waiting for a private game";
+                
+                return false;
             }
         }
 
         // if user left a game by quitting the session or in game action (resign)
         let game = this.games.find((game) => game.hasUser(user.ID));
-        if (!game || game.STATUS === "END") return;
+        if (!game || game.STATUS === "END") return false;
         game.endedBy(user.ID);
         this.games = this.games.filter((g) => g.ID !== game.ID);
-        return "user disconnected, match ended";
+        
+        return true;
+    }
+
+    get GAMES(): number {
+        return this.games.length
     }
 }

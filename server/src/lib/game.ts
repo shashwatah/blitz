@@ -5,12 +5,12 @@ import User from "./user";
 import Player from "./player";
 
 import { GameStatus } from "../utils/types";
-import { MOVE, RESIGN } from "../utils/messages";
-import { START } from "../utils/messages";
 import { genRandomStr } from "../utils/helpers";
 
-// currently using tell, listen, tellOther and tellBoth as names for socket comms, might change later.
-// redundant data? : game type, player num
+import { MOVE, RESIGN } from "../utils/messages";
+import { INIT, YOUMV, OPPMV, END, WARN, ERROR} from "../utils/messages";
+import { BADMSG, BADJSON, BADTURN, BADMOVE } from "../utils/messages";
+import { YOURSG, OPPRSG, OPPDSC } from "../utils/messages";
 
 export default class Game { 
     private id: string;
@@ -29,8 +29,8 @@ export default class Game {
         this.chess = new Chess();
 
         // merge into one later? will have to change tell funcs
-        this.tellOne("w", JSON.stringify({type: START, data: {color: "w"}}));
-        this.tellOne("b", JSON.stringify({type: START, data: {color: "b"}}));
+        this.tellOne("w", JSON.stringify({type: INIT, color: "w"}));
+        this.tellOne("b", JSON.stringify({type: INIT, color: "b"}));
 
         this.listen(this.players[0]);
         this.listen(this.players[1]);
@@ -44,12 +44,11 @@ export default class Game {
 
     private listen(player: Player) {
         player.listen((data: WebSocket.RawData) => {
-            // parsing incoming message, this returns 'any' data. 
             let message;
             try {
                 message = JSON.parse(data.toString());
             } catch (err) {
-                player.tell("[server] [ws]: invalid message: json error")
+                player.tell(JSON.stringify({type: ERROR, cause: BADJSON}))
                 return;
             }
 
@@ -58,19 +57,17 @@ export default class Game {
             // msg: {"type": "resign"}
             if (message.type === RESIGN) {
                 this.status = "RESIGNED";
-                player.tell("[game]: you have resigned, game has ended");
+                player.tell(JSON.stringify({type: END, cause: YOURSG}));
                 player.exit();
             }
          
-            // checking if the player sending the message is in turn
-            // will check with player id or color (wrt chess.js) later
             if (player.COLOR !== this.chess.turn()) {
-                player.tell("[game]: not your turn");
+                player.tell(JSON.stringify({type: WARN, cause: BADTURN}));
                 return;
             }
 
             // MOVE 
-            // WM1: {"type": "move", "data": {"from": "b2", "to": "b4"}}
+            // WM1: {"type": "move", "move": {"from": "b2", "to": "b4"}}
             if (message.type === MOVE) {
                 // should type guards be used here?
                 let move: Move;
@@ -78,38 +75,26 @@ export default class Game {
                 // chess.history, .incheck, ischeckmate, isdraw, isinsuffiecentmaterial, isstalemate, isgameover,
                 // isattacked, isthreefoldrep
                 // movenumber, moves
-                // use chess.js on frontend?
-
                 // checks:
-                //  piece belongs to the player moving?
-                //  piece promoting is a pawn?
-
-                // validation
-                // make move
-                //  return error in case: invalid move
-                // return data: 
-                //  what? should i the entirety of the current state of chessboard?
-                //  or only that the move was successfull? and move data, available moves
+                //      piece belongs to the player moving?
+                //      piece promoting is a pawn?
 
                 try {
                     move = this.chess.move({
-                        from: message.data.from,
-                        to: message.data.to
+                        from: message.move.from,
+                        to: message.move.to
                     });
                 } catch (err) {
-                    player.tell("[game]: invalid move");
+                    player.tell(JSON.stringify(JSON.stringify({type: WARN, cause: BADMOVE})));
                     return;
                 }
                 
-                let moveMsg = `moved ${move.piece} from ${move.from} to ${move.to}`;
-                player.tell(`[you]: ${moveMsg}`);
-                this.tellOne(player.COLOR === "w" ? "b" : "w", `[opp]: ${moveMsg}`);
-                this.tellBoth(`[game]: board: \n${this.chess.ascii()}`);
-
+                player.tell(JSON.stringify({type: YOUMV, move: move}));
+                this.tellOne(player.COLOR === "w" ? "b" : "w", JSON.stringify({type: OPPMV, move: move}));
                 return;
             }
 
-            player.tell("[server] [ws]: invalid message");
+            player.tell(JSON.stringify({type: ERROR, cause: BADMSG}));
         });
     }   
 
@@ -119,17 +104,12 @@ export default class Game {
         });
     }
 
-    private tellBoth(message: string) {
-        this.players[0].tell(message);
-        this.players[1].tell(message);
-    }
-
     endedBy(userID: string) {
-        let message = `[game]: opp has ${this.status === "RESIGNED" ? "resigned" : "left"}, game has ended`;
+        let cause = this.status === "RESIGNED" ? OPPRSG : OPPDSC;
         this.status = "END";
         this.players.forEach((player) => {
             if (userID === player.ID) return;
-            player.tell(message);
+            player.tell(JSON.stringify({type: END, cause: cause}));
             player.exit();
         });
     }
@@ -140,6 +120,7 @@ export default class Game {
         return false;
     }
 
+    // change getters to lowercase by using _ before members?
     get ID(): string {
         return this.id;
     }
