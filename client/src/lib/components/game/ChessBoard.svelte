@@ -8,9 +8,10 @@
     // only HOME and GAME are supposed to use the game controller
     // this is exists only until i start working on GAME
     let chess = game.CHESS;
-    let color: Color;
-    game.COLOR.subscribe((c) => {
-        color = c ? c : "w";
+    let color: Color = "w";
+    game.STATUS.subscribe((status) => {
+        if (status === "ACTIVE" && game.COLOR) color = game.COLOR
+        if (status === "INACTIVE") color = "w";
     });
     // currently directly using chess.js' color type (w, b) like on the backend
     // do i need to change this??
