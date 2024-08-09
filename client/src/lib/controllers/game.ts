@@ -1,4 +1,5 @@
 import { writable, type Writable, type Readable } from "svelte/store";
+
 import { Chess, type Color } from "chess.js";
 
 import type { GameStatus, GameType } from "../types/general";
@@ -6,8 +7,6 @@ import { INIT, WAIT, ERROR } from "../utils/messages";
 import { BADCODE } from "../utils/messages";
 
 // todo:
-//      refine controller
-//      dotenv config, remove ws 
 //      game setup: 
 //          loading msg
 //          redo create game setup
@@ -45,7 +44,7 @@ class Game {
     }
 
     connect(type: GameType, code?: string) {
-        this.socket = new WebSocket(`ws://localhost:108/game/${type?.toLowerCase()}${code ? "/"+code : ""}`);
+        this.socket = new WebSocket(`ws://${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/game/${type?.toLowerCase()}/${code ? code : ""}`);
         // should a conn error be handled here?
         this.socket.onopen = () => {
             this.listen();

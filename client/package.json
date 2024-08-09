@@ -16,7 +16,6 @@
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"@types/chess.js": "^0.13.7",
 		"@types/eslint": "^8.56.0",
-		"@types/ws": "^8.5.12",
 		"@typescript-eslint/eslint-plugin": "^7.0.0",
 		"@typescript-eslint/parser": "^7.0.0",
 		"eslint": "^8.56.0",
@@ -29,7 +28,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"chess.js": "^1.0.0-beta.8",
-		"ws": "^8.18.0"
+		"chess.js": "^1.0.0-beta.8"
 	}
 }
