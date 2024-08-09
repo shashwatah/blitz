@@ -26,7 +26,6 @@ export default class Manager {
         }
     }
     
-    // use some kind of logger instead of returning msgs to ws?
     // create/join public or private game based on url.
     manageEntry(user: User, reqGame: {type: string, code?: string}): boolean {
         // PUBLIC GAME
@@ -51,7 +50,6 @@ export default class Manager {
             if (!reqGame.code) {
                 let code = genRandomStr();
                 this.waiting.private[code] = user;
-
                 user.tell(JSON.stringify({type: WAIT, code: code}));
                 
                 return false

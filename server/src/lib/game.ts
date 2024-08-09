@@ -29,8 +29,8 @@ export default class Game {
         this.chess = new Chess();
 
         // merge into one later? will have to change tell funcs
-        this.tellOne("w", JSON.stringify({type: INIT, color: "w"}));
-        this.tellOne("b", JSON.stringify({type: INIT, color: "b"}));
+        this.tellOne("w", JSON.stringify({type: INIT, data: {id: this.id, color: "w"}}));
+        this.tellOne("b", JSON.stringify({type: INIT, data: {id: this.id, color: "b"}}));
 
         this.listen(this.players[0]);
         this.listen(this.players[1]);
