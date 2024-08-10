@@ -2,44 +2,47 @@
     import { createEventDispatcher } from "svelte";
     const dispatch = createEventDispatcher();
 
-    import type { GameType, ConnMode } from "$lib/types/general";
+    import type { GameType, PvtMode } from "$lib/types/general";
 
     export let setupReset: boolean;
     $: if (setupReset) reset();
 
-    let selectedGameType: GameType = undefined;
-    let selectedConnMode: ConnMode = undefined; 
+    let gameType: GameType = undefined;
+    let pvtMode: PvtMode = undefined; 
     let gameCode = "";
 
     function selectGameType(type: GameType) {
-        selectedGameType = type;
+        gameType = type;
         dispatch("select");
-        if (type === "PUBLIC") finish();
+
+        if (gameType === "PUBLIC") finish();
     }
 
     function unselectGameType() {
-        selectedGameType = undefined;
+        gameType = undefined;
+        unselectPvtMode();
         dispatch("unselect");
-        unselectConnMode();
     }
 
-    function selectConnMode(mode: ConnMode) {
-        selectedConnMode = mode;
+    function selectPvtMode(mode: PvtMode) {
+        pvtMode = mode;
+
+        if (pvtMode === "CREATE") finish();
     }
 
-    function unselectConnMode() {
-        if (selectedConnMode === "JOIN") gameCode = "";
-        selectedConnMode = undefined;
+    function unselectPvtMode() {
+        pvtMode = undefined;
+        gameCode = "";
     }
 
-    let showLoader = false;
+    let waiting = false;
 
     function finish() {
         dispatch("finish", {
-            type: selectedGameType,
+            type: gameType,
             code: gameCode
         });
-        showLoader = true;
+        waiting = true;
     }
 
     function cancel() {
@@ -49,19 +52,27 @@
 
     function reset() {
         unselectGameType();
-        showLoader = false;
+        waiting = false;
     }
 </script>
 
-{#if showLoader} 
-    <div id="gl-container" class="sr-container">
-        <button id="gl-cancel-btn" class="std-btn cancel-btn f-left" on:click={cancel}>X</button>
-        <button id="gl-msg" class="msg-box f-right ft-roboto">
-            loading {selectedGameType === "PUBLIC" ? "public" : "private"} game...
-        </button> 
-    </div>
-{:else if !selectedGameType}
-    <div id="gm-sel-container" class="sr-container">
+{#if waiting} 
+    <div id="wt-container" class="container {gameType === "PRIVATE" ? "dr" : "sr"}">
+        {#if gameType === "PRIVATE"}
+            <div id="wt-code-row" class="wt-row">
+                <button id="wt-code" class="msg-box ft-roboto f-left">que-ere-fdq</button>
+                <button id="wt-copy-btn" class="ft-roboto f-right">copy</button>
+            </div>
+        {/if}
+        <div id="wt-msg-row" class="wt-row">
+            <button id="wt-cancel-btn" class="std-btn cancel-btn f-left" on:click={cancel}>X</button>
+            <button id="wt-msg" class="msg-box f-right ft-roboto">
+                waiting for opponent...
+            </button> 
+        </div>
+    </div>   
+{:else if !gameType}
+    <div id="gm-sel-container" class="container sr">
         <button id="public-gm-sel-btn" class="gm-sel-btn std-btn f-left ft-roboto"
             on:click="{() => {selectGameType("PUBLIC")}}">
             public game
@@ -71,69 +82,43 @@
             private game
         </button>       
     </div>
-{:else if selectedGameType === "PRIVATE"}
-    {#if !selectedConnMode}
-        <div id="pgm-sel-container" class="sr-container">
+{:else if gameType === "PRIVATE"}
+    {#if !pvtMode}
+        <div id="pgm-sel-container" class="container sr">
             <button id="pgm-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectGameType}>X</button>
             <button id="pgm-join-btn" class="pgm-sel-btn std-btn sr-wcb-el sr-wcb-el-left ft-roboto"
-                on:click={() => {selectConnMode("JOIN")}}>
+                on:click={() => selectPvtMode("JOIN")}>
                 join game
             </button>
             <button id="pgm-create-btn" class="pgm-sel-btn std-btn sr-wcb-el sr-wcb-el-right ft-roboto"
-                on:click={() => {selectConnMode("CREATE")}}>
+                on:click={() => selectPvtMode("CREATE")}>
                 create game
             </button>
         </div>
-    {:else if selectedConnMode === "JOIN"}
-        <div id="pgm-join-container" class="sr-container">
-            <button id="pgmj-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectConnMode}>X</button>
+    {:else}
+        <div id="pgm-join-container" class="container sr">
+            <button id="pgmj-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectPvtMode}>X</button>
             <input id="pgmj-code-input" class="sr-wcb-el sr-wcb-el-left ft-roboto" type="text" placeholder="game code" maxlength="8" bind:value={gameCode}/>
             <button id="pgmj-join-btn" class="std-btn sr-wcb-el sr-wcb-el-right ft-roboto" on:click={finish}>join game</button>
         </div>
-    {:else}
-        <!-- the game starts on its now (backend) rather than waiting for player one to start it 
-             will have to change this later. for now: click on start game to wait for opponent-->
-        <div id="pgm-create-container" class="dr-container">
-            <div id="pgmc-top-container" class="dr-row-container">
-                <button id="pgmc-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectConnMode}>X</button>
-                <button id="pgmc-code-box" class="msg-box ft-roboto">que-ere-fdq</button>
-                <button id="pgmc-copy-btn" class="ft-roboto">copy</button>
-            </div>       
-            <div id="pgmc-bot-container" class="dr-row-container">
-                <button id="pgmc-msg-box" class="msg-box ft-roboto f-left">player has joined!</button>
-                <button id="pgmc-start-btn" class="std-btn ft-roboto f-right" on:click={finish}>start game</button>
-            </div>
-        </div>   
     {/if}
 {/if}
 
 <style>
-    /* standard elements */
-    .sr-container{
-        height: 50px;
+    .container {
         width: 80%;
         position: relative;
-        top: calc(50% - 25px); /**/
         margin-left: 50%;
         transform: translateX(-50%);
+    }
+
+    .sr {
+        height: 50px;
+        top: calc(50% - 25px); /**/
     }   
 
-    .dr-container {
+    .dr {
         height: 125px;
-        width: 90%;
-        position: relative;
-        /* top: calc(50% - 62.5px);  */
-        margin-left: 50%;
-        transform: translateX(-50%);
-    }
-    
-    .dr-row-container {
-        height: 50px;
-        width: 100%;
-    }
-
-    .dr-row-container:nth-child(1) {
-        margin-bottom: 25px;
     }
 
     .std-btn {
@@ -147,13 +132,6 @@
     /* find better hover effect for these buttons - maybe?*/
     .std-btn:hover {
         border: 2px solid #d3d2d2;
-    }
-
-    .msg-box {
-        height: 100%;
-        background: #efefee;
-        color: #a2a2a2;
-        border: none;
     }
 
     /* element based classes */
@@ -194,30 +172,37 @@
         color: #a2a2a2;
     }
     
-    #gl-msg {
+    .wt-row {
+        height: 50px;
+        width: 100%;
+    }
+
+    .wt-row:nth-of-type(1) {
+        margin-bottom: 25px;
+    }
+
+    .msg-box {
+        height: 100%;
+        background: #efefee;
+        color: #a2a2a2;
+        border: none;
+    }
+
+    #wt-msg {
         width: calc(100% - 70px);
     }
 
-    #pgmc-code-box {
-        width: calc(100% - 195px);
+    #wt-code {
+        width: calc(100% - 140px);
         font-weight: 400;
         color: #d1d1d1;
-        margin-left: 20px;
     }
 
-    #pgmc-copy-btn{
+    #wt-copy-btn {
         height: 100%;
         width: 120px;
         background: none;
         color: #d1d1d1;
         border: none;
-    }
-
-    #pgmc-msg-box {
-        width: calc(100% - 270px);
-    }
-
-    #pgmc-start-btn {
-        width: 250px;
     }
 </style>
