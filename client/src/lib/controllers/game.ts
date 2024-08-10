@@ -17,7 +17,11 @@ import { BADCODE } from "../utils/messages";
 class Game {
     private id: string | undefined = undefined;
     private socket: WebSocket | undefined = undefined;
+
+    // will change these two members later (maybe a game data object?)
+    private code: string | undefined = undefined;
     private color: Color | undefined = undefined;
+    
     private status: Writable<GameStatus> = writable("INACTIVE");
     private chess: Writable<Chess> = writable(new Chess());
 
@@ -38,6 +42,7 @@ class Game {
     private reset() {
         this.id = undefined;
         this.socket = undefined;
+        this.code = undefined;
         this.color = undefined
         this.status.set("INACTIVE");
         this.chess.set(new Chess());
@@ -66,7 +71,8 @@ class Game {
 
             if (message.type === WAIT) {
                 console.log("[server]: waiting for opponent");
-                if (message.code) console.log(`[server]: game code: ${message.code}`);
+                if (message.code) console.log(`[server]: game code: ${message.code}`)
+                this.code = message.code;
                 this.status.set("WAITING");
             }
 
@@ -93,6 +99,10 @@ class Game {
         this.status.set("RESET");
     }
     
+    get CODE(): string | undefined {
+        return this.code;
+    }
+
     get COLOR(): Color | undefined {
         return this.color;
     }

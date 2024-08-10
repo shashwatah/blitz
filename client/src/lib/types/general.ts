@@ -2,7 +2,6 @@ import type { Color, PieceSymbol } from "chess.js";
 
 export type Page = "HOME" | "GAME";
 export type GameType = "PUBLIC" | "PRIVATE" | undefined;
-export type PvtMode = "JOIN" | "CREATE" | undefined;
 export type GameStatus = "INACTIVE" | "WAITING" | "ACTIVE" | "END" | "CONNFAIL" | "RESET";
 
 export type Player = {

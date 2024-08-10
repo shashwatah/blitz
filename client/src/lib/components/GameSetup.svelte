@@ -2,14 +2,15 @@
     import { createEventDispatcher } from "svelte";
     const dispatch = createEventDispatcher();
 
-    import type { GameType, PvtMode } from "$lib/types/general";
+    import type { GameType } from "$lib/types/general";
+    type PvtMode = "JOIN" | "CREATE" | undefined; 
 
-    export let setupReset: boolean;
-    $: if (setupReset) reset();
+    export let resetSetup: boolean;
+    export let gameCode: string | undefined;
 
     let gameType: GameType = undefined;
     let pvtMode: PvtMode = undefined; 
-    let gameCode = "";
+    let joinCode = "";
 
     function selectGameType(type: GameType) {
         gameType = type;
@@ -32,7 +33,7 @@
 
     function unselectPvtMode() {
         pvtMode = undefined;
-        gameCode = "";
+        joinCode = "";
     }
 
     let waiting = false;
@@ -40,7 +41,7 @@
     function finish() {
         dispatch("finish", {
             type: gameType,
-            code: gameCode
+            code: joinCode
         });
         waiting = true;
     }
@@ -54,13 +55,15 @@
         unselectGameType();
         waiting = false;
     }
+
+    $: if (resetSetup) reset();
 </script>
 
 {#if waiting} 
     <div id="wt-container" class="container {gameType === "PRIVATE" ? "dr" : "sr"}">
         {#if gameType === "PRIVATE"}
             <div id="wt-code-row" class="wt-row">
-                <button id="wt-code" class="msg-box ft-roboto f-left">que-ere-fdq</button>
+                <button id="wt-code" class="msg-box ft-roboto f-left">{gameCode}</button>
                 <button id="wt-copy-btn" class="ft-roboto f-right">copy</button>
             </div>
         {/if}
@@ -98,7 +101,7 @@
     {:else}
         <div id="pgm-join-container" class="container sr">
             <button id="pgmj-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectPvtMode}>X</button>
-            <input id="pgmj-code-input" class="sr-wcb-el sr-wcb-el-left ft-roboto" type="text" placeholder="game code" maxlength="8" bind:value={gameCode}/>
+            <input id="pgmj-code-input" class="sr-wcb-el sr-wcb-el-left ft-roboto" type="text" placeholder="game code" maxlength="8" bind:value={joinCode}/>
             <button id="pgmj-join-btn" class="std-btn sr-wcb-el sr-wcb-el-right ft-roboto" on:click={finish}>join game</button>
         </div>
     {/if}
@@ -196,6 +199,7 @@
         width: calc(100% - 140px);
         font-weight: 400;
         color: #d1d1d1;
+        user-select: text;
     }
 
     #wt-copy-btn {
