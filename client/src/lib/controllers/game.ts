@@ -6,9 +6,6 @@ import type { GameStatus, GameType } from "../types/general";
 import { INIT, WAIT, ERROR } from "../utils/messages";
 import { BADCODE } from "../utils/messages";
 
-// todo:
-//      game page, chessboard
-
 // much better than before, not bad at all
 // but still needs a few updates
 class Game {
@@ -16,6 +13,7 @@ class Game {
     private socket: WebSocket | undefined = undefined;
 
     // will change these two members later (maybe a game data object?)
+    // also the name color feels wrong since it's just the player's color
     private code: string | undefined = undefined;
     private color: Color | undefined = undefined;
     
@@ -97,7 +95,7 @@ class Game {
     }
     
     get CODE(): string | undefined {
-        return this.code;
+        return this.code; 
     }
 
     get COLOR(): Color | undefined {

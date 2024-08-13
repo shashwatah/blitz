@@ -1,3 +1,11 @@
+<!-- todo:
+        move 
+            drag and drop
+            controller msg
+            board update
+            moves history
+-->
+
 <script lang="ts">
     import { fade } from "svelte/transition";
     import { goto } from "$app/navigation";
@@ -5,36 +13,14 @@
     import Chessboard from "$lib/components/game/ChessBoard.svelte";
     import ChatBox from "$lib/components/game/ChatBox.svelte";
     import GameButton from "$lib/components/game/GameButton.svelte";
-    import PlayerStatus from "$lib/components/game/PlayerStatus.svelte";
     import MoveBoard from "$lib/components/game/MoveBoard.svelte";
     
-    import type { Player } from "$lib/types/general";
-  import game from "$lib/controllers/game";
+    import game from "$lib/controllers/game";
 
-    let chessboardPos: "pulled" | "center" = "pulled";
-    let chessboardRendered: boolean = false;
-
-    let playerOne: Player = {
-        name: "dedcliff",
-        isOne: true,
-        isActive: true,
-        color: "b",
-        timer: "2:57",
-        capturedPieces: ["k", "p", "p", "r", "b", "q"]
-    };
-
-    let playerTwo: Player = {
-        name: "guest_514",
-        isOne: false,
-        isActive: false,
-        color: "b",
-        timer: "2:45",
-        capturedPieces: ["p", "k", "p"]
-    };
+    let boardPos: "pulled" | "center" = "pulled";
 
     setTimeout(() => {
-        chessboardPos = "center";
-        chessboardRendered = true;
+        boardPos = "center";
     }, 0);
 
     function resign() {
@@ -43,7 +29,7 @@
     }
 </script>
 
-{#if chessboardRendered} 
+{#if boardPos === "center"} 
     <div id="left-aux-container" class="aux-container" transition:fade={{ delay: 400, duration: 100 }}>
         <div id="chat-box-container" class="left-aux-el">
             <ChatBox/>
@@ -57,23 +43,23 @@
     </div> 
 {/if}
    
-<div id="chessboard-container" class="chessboard-pos-{chessboardPos}">
-    <Chessboard />
+<div id="chessboard-container" class="chessboard-pos-{boardPos}">
+    <Chessboard color={game.COLOR} chess={game.CHESS}/>
 </div>
 
-{#if chessboardRendered}
+{#if boardPos === "center"}
     <div id="right-aux-container" class="aux-container" transition:fade={{ delay: 400, duration: 100 }}>
-        <div id="p2-status-container" class="player-status-container">
+        <!-- <div id="p2-status-container" class="player-status-container">
             <PlayerStatus player={playerTwo}/>
         </div>
-    
+     -->
         <div id="move-board-container">
             <MoveBoard/>
         </div>
 
-        <div id="p1-status-container" class="player-status-container">
+        <!-- <div id="p1-status-container" class="player-status-container">
             <PlayerStatus player={playerOne}/>
-        </div>
+        </div> -->
     </div>
 {/if}
 

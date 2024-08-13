@@ -1,20 +1,11 @@
 <script lang="ts">
-    import type { Color } from "chess.js";
-    
-    import game from "$lib/controllers/game";
-    
+    import type { Readable } from "svelte/store";
+    import type { Chess, Color } from "chess.js";
+
     import pieceSVG from "../../utils/svg";
 
-    // only HOME and GAME are supposed to use the game controller
-    // this is exists only until i start working on GAME
-    let chess = game.CHESS;
-    let color: Color = "w";
-    game.STATUS.subscribe((status) => {
-        if (status === "ACTIVE" && game.COLOR) color = game.COLOR
-        if (status === "INACTIVE") color = "w";
-    });
-    // currently directly using chess.js' color type (w, b) like on the backend
-    // do i need to change this??
+    export let color: Color | undefined;
+    export let chess: Readable<Chess>
 </script>
 
 <div id="chessboard" class="chessboard-{color}">
