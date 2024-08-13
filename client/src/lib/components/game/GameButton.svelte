@@ -1,6 +1,7 @@
-<!-- comp needs better name? -->
-
 <script lang="ts">
+    import { createEventDispatcher } from "svelte";
+    const dispatch = createEventDispatcher();
+
     export let buttonValue;
     export let isDisabled: boolean = false;
     export let isFirst: boolean = false;
@@ -10,7 +11,8 @@
 <button id="game-btn" 
     class="ft-roboto
     {isDisabled ? "disabled" : ""}
-    {isFirst ? "f-left" : isLast ? "f-right" : ""}">
+    {isFirst ? "f-left" : isLast ? "f-right" : ""}"
+    on:click={() => {if (buttonValue === "resign") dispatch("resign")}}>
     {buttonValue}
 </button>   
 

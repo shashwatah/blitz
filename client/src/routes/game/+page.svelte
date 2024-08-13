@@ -1,5 +1,6 @@
 <script lang="ts">
     import { fade } from "svelte/transition";
+    import { goto } from "$app/navigation";
 
     import Chessboard from "$lib/components/game/ChessBoard.svelte";
     import ChatBox from "$lib/components/game/ChatBox.svelte";
@@ -8,6 +9,7 @@
     import MoveBoard from "$lib/components/game/MoveBoard.svelte";
     
     import type { Player } from "$lib/types/general";
+  import game from "$lib/controllers/game";
 
     let chessboardPos: "pulled" | "center" = "pulled";
     let chessboardRendered: boolean = false;
@@ -34,6 +36,11 @@
         chessboardPos = "center";
         chessboardRendered = true;
     }, 0);
+
+    function resign() {
+        game.disconnect();
+        goto("/");
+    }
 </script>
 
 {#if chessboardRendered} 
@@ -44,7 +51,7 @@
 
         <div id="game-btn-container">
             <GameButton buttonValue={"abort"} isDisabled={true} isFirst={true}/>
-            <GameButton buttonValue={"resign"}/>
+            <GameButton buttonValue={"resign"} on:resign={resign}/>
             <GameButton buttonValue={"draw"} isLast={true}/>
         </div>
     </div> 

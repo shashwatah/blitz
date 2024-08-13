@@ -7,9 +7,6 @@ import { INIT, WAIT, ERROR } from "../utils/messages";
 import { BADCODE } from "../utils/messages";
 
 // todo:
-//      game setup: 
-//          loading msg
-//          redo create game setup
 //      game page, chessboard
 
 // much better than before, not bad at all

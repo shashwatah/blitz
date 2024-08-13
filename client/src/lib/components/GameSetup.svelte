@@ -11,6 +11,14 @@
     let gameType: GameType = undefined;
     let pvtMode: PvtMode = undefined; 
     let joinCode = "";
+    let codeCopied = false;
+
+    async function copyCode() {
+        if (!gameCode) return;
+        await navigator.clipboard.writeText(gameCode);
+        codeCopied = true;
+        setTimeout(() => {codeCopied = false}, 1000);
+    }
 
     function selectGameType(type: GameType) {
         gameType = type;
@@ -61,15 +69,16 @@
 
 {#if waiting} 
     <div id="wt-container" class="container {gameType === "PRIVATE" ? "dr" : "sr"}">
-        {#if gameType === "PRIVATE"}
+        {#if gameType === "PRIVATE" && pvtMode === "CREATE"}
             <div id="wt-code-row" class="wt-row">
                 <button id="wt-code" class="msg-box ft-roboto f-left">{gameCode}</button>
-                <button id="wt-copy-btn" class="ft-roboto f-right">copy</button>
+                <button id="wt-copy-btn" class="ft-roboto f-right" on:click={copyCode}>{codeCopied ? "copied" : "copy"}</button>
             </div>
         {/if}
         <div id="wt-msg-row" class="wt-row">
             <button id="wt-cancel-btn" class="std-btn cancel-btn f-left" on:click={cancel}>X</button>
             <button id="wt-msg" class="msg-box f-right ft-roboto">
+                <!-- better message? -->
                 waiting for opponent...
             </button> 
         </div>
@@ -198,7 +207,6 @@
     #wt-code {
         width: calc(100% - 140px);
         font-weight: 400;
-        color: #d1d1d1;
         user-select: text;
     }
 
@@ -208,5 +216,10 @@
         background: none;
         color: #d1d1d1;
         border: none;
+        cursor: pointer;
+    }
+
+    #wt-copy-btn:hover {
+        color: #313030;
     }
 </style>
