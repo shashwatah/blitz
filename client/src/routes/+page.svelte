@@ -1,12 +1,12 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
-    
-    import Chessboard from "$lib/components/game/ChessBoard.svelte";
+
+    import FauxBoard from "$lib/components/FauxBoard.svelte";
     import GameSetup from "$lib/components/GameSetup.svelte";
     
     import game from "$lib/controllers/game";
 
-    let chessboardPos: "default" | "pulled" = "default";
+    let boardPos: "default" | "pulled" = "default";
     let resetSetup = false;
     let gameCode: string | undefined = undefined;
 
@@ -26,8 +26,8 @@
 
 <div id="game-setup-container">
     <GameSetup 
-        on:select={() => {chessboardPos = "pulled"}} 
-        on:unselect={() => {chessboardPos = "default"}} 
+        on:select={() => {boardPos = "pulled"}} 
+        on:unselect={() => {boardPos = "default"}} 
         on:finish={connect} 
         on:cancel={disconnect}
         resetSetup={resetSetup}
@@ -35,8 +35,8 @@
     />
 </div>
 
-<div id="chessboard-container" class="chessboard-pos-{chessboardPos}">
-    <Chessboard />
+<div id="chessboard-container" class="chessboard-pos-{boardPos}">
+    <FauxBoard />
 </div>
 
 <style>
