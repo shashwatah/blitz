@@ -50,8 +50,10 @@ class Game {
     }
 
     connect(type: GameType, code?: string) {
-        
-        this.socket = new WebSocket(`ws://${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/game/${type?.toLowerCase()}${code ? `/${code}` : ""}`);
+        let port = import.meta.env.VITE_PORT;
+        let host = import.meta.env.VITE_HOST || "localhost";
+
+        this.socket = new WebSocket(`ws://${host}:${port}/game/${type?.toLowerCase()}${code ? `/${code}` : ""}`);
         
         this.socket.onerror = (event) => {
             console.log(event);
