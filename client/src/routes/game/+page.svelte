@@ -23,7 +23,12 @@
         boardPos = "center";
     }, 0);
 
+    game.STATUS.subscribe((status) => {
+        if (status === "END") goto("/");
+    });
+
     function resign() {
+        // will eventually send out a resign msg, server will disconnect from its side
         game.disconnect();
         goto("/");
     }
@@ -102,7 +107,7 @@
         width: 100%;
     }
     
-    #p1-status-container {
+    /* #p1-status-container {
         position: fixed;
         bottom: 0px;
     }
@@ -110,7 +115,7 @@
     #p2-status-container {
         position: fixed;
         top: 0px;
-    }
+    } */
 
     #move-board-container {
         position: fixed;

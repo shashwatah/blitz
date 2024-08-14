@@ -3,8 +3,8 @@ import { writable, type Writable, type Readable } from "svelte/store";
 import { Chess, type Color } from "chess.js";
 
 import type { GameStatus, GameType } from "../types/general";
-import { INIT, WAIT, ERROR } from "../utils/messages";
-import { BADCODE } from "../utils/messages";
+import { INIT, WAIT, ERROR, END } from "../utils/messages";
+import { BADCODE, OPPDSC, OPPRSG } from "../utils/messages";
 
 // much better than before, not bad at all
 // but still needs a few updates
@@ -27,6 +27,11 @@ class Game {
                 this.status.set("RESET");
             }
 
+            if (status === "END") {
+                console.log("[game]: game has ended");
+                this.status.set("RESET");
+            }
+
             if (status === "RESET") {
                 console.log("[game]: resetting controller");
                 this.reset();
@@ -44,8 +49,14 @@ class Game {
     }
 
     connect(type: GameType, code?: string) {
-        this.socket = new WebSocket(`ws://${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/game/${type?.toLowerCase()}/${code ? code : ""}`);
-        // should a conn error be handled here?
+        
+        this.socket = new WebSocket(`ws://${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/game/${type?.toLowerCase()}${code ? `/${code}` : ""}`);
+        
+        this.socket.onerror = (event) => {
+            console.log(event);
+            this.status.set("RESET");
+        }
+        
         this.socket.onopen = () => {
             this.listen();
         }
@@ -85,12 +96,20 @@ class Game {
                     });
                 }, 5000);
             }
+
+            if (message.type === END) {
+                if (message.cause === OPPDSC) console.log("[server]: opp disconnected");
+                if (message.cause === OPPRSG) console.log("[server]: opp resigned")
+
+                this.status.set("END");
+            }
         }
     }
 
+    // this is only being used in / currently, to disconnect while waiting
+    // might change it later
     disconnect() {
-        // something similar will happen when the game ends naturally as well
-        this.socket?.close();
+        if (this.socket?.OPEN) this.socket.close();
         this.status.set("RESET");
     }
     
