@@ -28,9 +28,7 @@
     });
 
     function resign() {
-        // will eventually send out a resign msg, server will disconnect from its side
-        game.disconnect();
-        goto("/");
+        game.resign();
     }
 </script>
 

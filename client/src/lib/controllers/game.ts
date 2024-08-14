@@ -3,8 +3,9 @@ import { writable, type Writable, type Readable } from "svelte/store";
 import { Chess, type Color } from "chess.js";
 
 import type { GameStatus, GameType } from "../types/general";
-import { INIT, WAIT, ERROR, END } from "../utils/messages";
+import { INIT, WAIT, ERROR, END, YOURSG } from "../utils/messages";
 import { BADCODE, OPPDSC, OPPRSG } from "../utils/messages";
+import { RESIGN } from "../utils/messages";
 
 // much better than before, not bad at all
 // but still needs a few updates
@@ -98,18 +99,23 @@ class Game {
             }
 
             if (message.type === END) {
-                if (message.cause === OPPDSC) console.log("[server]: opp disconnected");
-                if (message.cause === OPPRSG) console.log("[server]: opp resigned")
+                if (message.cause === OPPDSC) console.log("[server]: opp has disconnected");
+                if (message.cause === OPPRSG) console.log("[server]: opp has resigned");
+                if (message.cause === YOURSG) console.log("[server]: you have resigned");
 
                 this.status.set("END");
             }
         }
     }
 
+    resign() {
+        this.socket?.send(JSON.stringify({type: RESIGN}));
+    }
+
     // this is only being used in / currently, to disconnect while waiting
     // might change it later
     disconnect() {
-        if (this.socket?.OPEN) this.socket.close();
+        this.socket?.close();
         this.status.set("RESET");
     }
     
