@@ -5,20 +5,12 @@
     import type { GameType } from "$lib/types/general";
     type PvtMode = "JOIN" | "CREATE" | undefined; 
 
-    export let resetSetup: boolean;
-    export let gameCode: string | undefined;
+    export let gameCode: string;
 
     let gameType: GameType = undefined;
     let pvtMode: PvtMode = undefined; 
     let joinCode = "";
     let codeCopied = false;
-
-    async function copyCode() {
-        if (!gameCode) return;
-        await navigator.clipboard.writeText(gameCode);
-        codeCopied = true;
-        setTimeout(() => {codeCopied = false}, 1000);
-    }
 
     function selectGameType(type: GameType) {
         gameType = type;
@@ -44,12 +36,24 @@
         joinCode = "";
     }
 
+    async function copyCode() {
+        if (!gameCode) return;
+        await navigator.clipboard.writeText(gameCode);
+        codeCopied = true;
+        setTimeout(() => {codeCopied = false}, 1000);
+    }
+
     let waiting = false;
 
+    // the server infers whether the client wants to create or join a private game, by the req path
+    // if an empty string gets passed, it creates a private game instead of trying to join one
+    // if the code is manipulated somehow, the client would think it is joining a game while the server will create one
+    // might want to send a message from the server upon conn, acknowledging the game type along with other data
+    // if the data matches with the client's version then the game proceeds, or else the game gets reset
     function finish() {
         dispatch("finish", {
             type: gameType,
-            code: joinCode
+            code: joinCode === "" ? undefined : joinCode
         });
         waiting = true;
     }
@@ -59,12 +63,10 @@
         reset();
     }
 
-    function reset() {
+    export function reset() {
         unselectGameType();
         waiting = false;
     }
-
-    $: if (resetSetup) reset();
 </script>
 
 {#if waiting} 
@@ -110,7 +112,7 @@
     {:else}
         <div id="pgm-join-container" class="container sr">
             <button id="pgmj-cancel-btn" class="std-btn cancel-btn f-left" on:click={unselectPvtMode}>X</button>
-            <input id="pgmj-code-input" class="sr-wcb-el sr-wcb-el-left ft-roboto" type="text" placeholder="game code" maxlength="8" bind:value={joinCode}/>
+            <input id="pgmj-code-input" class="sr-wcb-el sr-wcb-el-left ft-roboto" type="text" placeholder="game code" maxlength="8" required bind:value={joinCode}/>
             <button id="pgmj-join-btn" class="std-btn sr-wcb-el sr-wcb-el-right ft-roboto" on:click={finish}>join game</button>
         </div>
     {/if}

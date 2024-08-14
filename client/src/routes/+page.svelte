@@ -2,21 +2,21 @@
     import { goto } from "$app/navigation";
 
     import FauxBoard from "$lib/components/FauxBoard.svelte";
-    import GameSetup from "$lib/components/GameSetup.svelte";
+    import Setup from "$lib/components/Setup.svelte";
     
     import game from "$lib/controllers/game";
 
+    let gameCode = "";
+    let setup: Setup;
     let boardPos: "default" | "pulled" = "default";
-    let resetSetup = false;
-    let gameCode: string | undefined = undefined;
 
     function connect(event: CustomEvent) {
         game.connect(event.detail.type, event.detail.code);
         game.STATUS.subscribe((status) => {
-            if (status === "RESET") resetSetup = true;
-            if (status === "WAITING") gameCode = game.CODE;
+            if (status === "RESET" && setup) setup.reset();
+            if (status === "WAITING" && game.CODE) gameCode = game.CODE;
             if (status === "ACTIVE") goto("/game");
-        })
+        });
     }
 
     function disconnect() {
@@ -24,14 +24,14 @@
     }
 </script>
 
-<div id="game-setup-container">
-    <GameSetup 
+<div id="setup-container">
+    <Setup 
         on:select={() => {boardPos = "pulled"}} 
         on:unselect={() => {boardPos = "default"}} 
         on:finish={connect} 
         on:cancel={disconnect}
-        resetSetup={resetSetup}
         gameCode={gameCode}
+        bind:this={setup}
     />
 </div>
 
@@ -41,7 +41,7 @@
 
 <style>
     /* main container */
-    #game-setup-container {
+    #setup-container {
         height: 175px;
         width: 50%;  /* ? */
         position: fixed;
