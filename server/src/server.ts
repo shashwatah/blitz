@@ -9,7 +9,8 @@ import { validateGamePath } from "./utils/helpers";
 
 dotenv.config();
 
-const port = process.env.PORT || 3000;
+const port: number = Number(process.env.PORT);
+const host: string = process.env.HOST || "localhost";
 
 const exp: express.Express = express();
 const server: http.Server = http.createServer(exp); 
@@ -27,6 +28,6 @@ server.on("upgrade", (req, socket, head) => {
     }
 });
 
-server.listen(port, () => {
-    console.log(`Server is running on port: ${port}`);
+server.listen(port, host, () => {
+    console.log(`Server is running at ${host}:${port}`);
 });
