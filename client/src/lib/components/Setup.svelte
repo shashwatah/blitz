@@ -21,7 +21,7 @@
 
     function unselectGameType() {
         gameType = undefined;
-        unselectPvtMode();
+        if (pvtMode) unselectPvtMode();
         dispatch("unselect");
     }
 
@@ -207,7 +207,7 @@
     }
 
     #wt-code {
-        width: calc(100% - 140px);
+        width: calc(100% - 130px);
         font-weight: 400;
         user-select: text;
     }

@@ -90,14 +90,6 @@ class Game {
                 this.color = message.data.color;
                 console.log(`[server]: game started; game id: ${this.id}; assigned color: ${this.color}`)
                 this.status.set("ACTIVE");
-
-                // making white move just for test
-                setTimeout(() => {
-                    this.chess.update(chess => {
-                        chess.move({from: "e2", to: "e4"});
-                        return chess;
-                    });
-                }, 5000);
             }
 
             if (message.type === END) {

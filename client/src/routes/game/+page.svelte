@@ -7,6 +7,7 @@
 -->
 
 <script lang="ts">
+    import { onMount } from "svelte";
     import { fade } from "svelte/transition";
     import { goto } from "$app/navigation";
 
@@ -19,17 +20,20 @@
 
     let boardPos: "pulled" | "center" = "pulled";
 
-    setTimeout(() => {
-        boardPos = "center";
-    }, 0);
-
-    game.STATUS.subscribe((status) => {
-        if (status === "END") goto("/");
-    });
-
     function resign() {
         game.resign();
     }
+
+    onMount(() => {
+        game.STATUS.subscribe((status) => {
+            // if status inactive show a message later
+            if (status === "END" || status === "INACTIVE") goto("/");
+        });
+
+        setTimeout(() => {
+            boardPos = "center";
+        }, 0);
+    })
 </script>
 
 {#if boardPos === "center"} 
