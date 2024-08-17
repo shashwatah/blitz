@@ -1,6 +1,4 @@
  <script lang="ts">
-    // @ts-nocheck
-
     import type { Readable } from "svelte/store";
     import type { Chess, Color } from "chess.js";
 
@@ -10,64 +8,56 @@
     export let color: Color | undefined;
     export let chess: Readable<Chess>
 
-    let dragStart: any;
-    let dragEnd: any;
+    let offsetX: number | undefined;
+    let offsetY: number | undefined;
 
-
-    // janky
     onMount(() => {
-        ondragstart = (event) => {
-            event.dataTransfer?.setData("piece-id", event.target.id);
-            event.target.classList.add("dragging")
-            event.target.classList.remove("not-dragging")
+        onmousedown = (event: MouseEvent) => {
+            let piece = event.target as HTMLElement;
 
-            console.log(event.dataTransfer?.getData("piece-id"));
-        }
+            if (!piece || !piece.id.startsWith("piece")) return;
+            
+            piece.classList.add("dragging");
+            console.log("dragging", piece.id);
 
-        ondragenter = (event) => {
-            if (event.target.classList.contains("chessboard-block") && !event.target.classList.contains("drop-wait") && event.target.innerHTML === "") {
-                event.target.classList.add("drop-wait");
-            }
-        }   
+            let originalX = event.clientX;
+            let originalY = event.clientY;
+            
+            document.body.style.cursor = "grabbing";
 
-        ondragleave = (event) => {
-            if (event.target.classList.contains("chessboard-block") && event.target.classList.contains("drop-wait")) {
-                event.target.classList.remove("drop-wait");
-            }
-        }
-
-        ondragover = (event) => {
-            event.preventDefault();
-        }
-
-        ondrop = (event) => {
-            if (event.target.classList.contains("chessboard-block") && event.target.classList.contains("drop-wait")) {
-                let parent = document.getElementById(event.dataTransfer?.getData("piece-id"))?.parentElement;
-                if (parent) {
-                    event.target.innerHTML = parent.innerHTML;
-                    parent.innerHTML = "";
-                    event.target.classList.remove("drop-wait")
-                }
+            onmousemove = (ev) => {
+                offsetX = ev.clientX - originalX;
+                offsetY = ev.clientY - originalY;
             }
 
-            document.getElementById(event.dataTransfer?.getData("piece-id"))?.classList.remove("dragging");
-            document.getElementById(event.dataTransfer?.getData("piece-id"))?.classList.add("not-dragging");
+            onmouseup = (ev) => {
+                onmousemove = null;
+                offsetX = undefined;
+                offsetY = undefined;
+
+                piece?.classList.remove("dragging");
+                console.log("dropping at", (ev.target as HTMLElement).id);
+
+                document.body.style.cursor = "default";
+
+                onmouseup = null;
+            }
         }
-    })
+    });
 </script>
 
-<div id="chessboard" class="chessboard-{color}">
+<div id="board" class="board-{color}" style="--offsetX: {offsetX}px; --offsetY: {offsetY}px">
     {#each $chess.board() as row, i}
-        <div class="chessboard-row">
+        <div class="row">
             {#each row as block, j}
-                <div id={`${i}${j}`} class="chessboard-block {(i+j) % 2 === 0 ? "w" : "b"}-chessboard-block">
+                <div id={`block-${i}${j}`} class="block block-{(i+j) % 2 === 0 ? "w" : "b"}">
                     {#if block !== null}
-                        <span id={`${block.type}-${block.color}-${j}`} class="not-dragging" role="figure" draggable="true">
+                        <div id={`piece-${block.color}${block.type}${j}`} class="piece">
                             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" 
-                                class="chess-piece {block.color}-chess-piece">
+                                class="piece-svg piece-svg-{block.color}">
                                 {@html pieceSVG[block.type]}
                             </svg>  
-                        </span>
+                        </div>
                     {/if}
                 </div>
             {/each}
@@ -76,55 +66,52 @@
 </div>
 
 <style>
-    .not-dragging {
-        opacity: 1;
-    }
-
-    .dragging {
-        opacity: 0;
-    }
-
-    .drop-wait {
-        filter: brightness(0) saturate(100%) invert(85%) sepia(37%) saturate(439%) hue-rotate(76deg) brightness(99%) contrast(95%);
-    }
-
-    #chessboard {
+    #board {
         border: 2px solid #d1d1d1;
         height: 100%;
         width: 100%;
         display: flex;
     }
 
-    .chessboard-w {
+    .board-w {
         flex-direction: column;
     }
 
-    .chessboard-b {
+    .board-b {
         flex-direction: column-reverse;
     }
     
-    .chessboard-row {
+    .row {
         height: 12.5%;
         width: 100%;
         display: flex;
         flex-direction: row;
     }
 
-    .chessboard-block {
+    .block {
         height: 100%;
         width: 12.5%;
         text-align: center;
     }
 
-    .w-chessboard-block {
+    .block-w {
         background: #fff;
     }
 
-    .b-chessboard-block {
+    .block-b {
         background: #efefef;
     }
 
-    .chess-piece {
+    .piece {
+        display: block;
+        height: 100%;
+    }
+
+    .piece:hover {
+        cursor: grab;
+    }
+
+    .piece-svg {
         position: relative;
         height: 90%;
         margin-top: 15%;
@@ -132,14 +119,24 @@
         stroke: #313030;
         stroke-width: .4px;
         -webkit-user-drag: auto;
+        pointer-events: none;
     }
 
-    .w-chess-piece {
+    .piece-svg-w {
         fill: #fff;
     }
 
-    .b-chess-piece {
+    .piece-svg-b {
         fill: #a2a2a2;
+    }
+
+    .dragging {
+        pointer-events: none;
+        transform: translate(var(--offsetX), var(--offsetY));
+    }
+
+    .drop-target {
+        filter: brightness(0) saturate(100%) invert(85%) sepia(37%) saturate(439%) hue-rotate(76deg) brightness(99%) contrast(95%);
     }
 </style>
 

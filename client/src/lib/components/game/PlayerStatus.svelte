@@ -1,10 +1,10 @@
-<script lang="ts">
+<!-- <script lang="ts">
     import type { Player } from "$lib/types/general";   
     import pieceSVG from "$lib/utils/svg";
 
     export let player: Player;
-</script>
-
+</script> -->
+<!-- 
 <div id="player-status">
     <button id="timer" class="{player.isActive ? "" : "disabled"}" disabled>{player.timer}</button>
     <div id="sub-container">
@@ -17,7 +17,6 @@
             {#each player.capturedPieces.slice(0, 5) as piece}
                 <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" 
                     class="captured-piece {player.color} {player.capturedPieces.length > 5 ? "ext" : ""}"> 
-                    <!-- "ext" class needs better name -->
                     {@html pieceSVG[piece]}
                 </svg>
             {/each}
@@ -29,8 +28,8 @@
             </div>
         {/if}
     </div>
-</div>
-
+</div> -->
+<!-- 
 <style>
     #player-status {
         height: 100%;
@@ -134,4 +133,4 @@
     .cpc-p2{
         margin-top: 6px;
     }
-</style>
+</style> -->
