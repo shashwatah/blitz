@@ -11,36 +11,52 @@
     let offsetX: number | undefined;
     let offsetY: number | undefined;
 
+    let enteredBlock: HTMLElement | undefined;
+    let grabbedPiece: HTMLElement | undefined;
+
+    let onblockenter: ((event: MouseEvent) => void) | null;
+    let onblockleave: ((event: MouseEvent) => void) | null;
+
+    // a little janky but gets the job done pretty well
     onMount(() => {
         onmousedown = (event: MouseEvent) => {
-            let piece = event.target as HTMLElement;
-
-            if (!piece || !piece.id.startsWith("piece")) return;
+            grabbedPiece = event.target as HTMLElement;
+            if (!grabbedPiece || !grabbedPiece.id.startsWith("piece")) return;
             
-            piece.classList.add("dragging");
-            console.log("dragging", piece.id);
+            grabbedPiece.classList.add("dragging");
+            document.body.style.cursor = "grabbing";
 
             let originalX = event.clientX;
             let originalY = event.clientY;
-            
-            document.body.style.cursor = "grabbing";
 
+            console.log("dragging", grabbedPiece.id);
+           
             onmousemove = (ev) => {
                 offsetX = ev.clientX - originalX;
                 offsetY = ev.clientY - originalY;
             }
 
-            onmouseup = (ev) => {
-                onmousemove = null;
-                offsetX = undefined;
-                offsetY = undefined;
+            onblockenter = (ev: MouseEvent) => {
+                enteredBlock = ev.target as HTMLElement;
+                enteredBlock.classList.add("drop-target");
+            }
 
-                piece?.classList.remove("dragging");
-                console.log("dropping at", (ev.target as HTMLElement).id);
+            onblockleave = () => {
+                enteredBlock?.classList.remove("drop-target");
+            }
+
+            onmouseup = (ev) => {
+                onmousemove = onmouseup = null;
+                onblockenter = onblockleave = null;
+
+                enteredBlock?.classList.remove("drop-target");
+                grabbedPiece?.classList.remove("dragging");
+
+                offsetX = offsetY = undefined;
+                enteredBlock = grabbedPiece = undefined;
 
                 document.body.style.cursor = "default";
-
-                onmouseup = null;
+                console.log("dropping at", (ev.target as HTMLElement).id);
             }
         }
     });
@@ -50,7 +66,7 @@
     {#each $chess.board() as row, i}
         <div class="row">
             {#each row as block, j}
-                <div id={`block-${i}${j}`} class="block block-{(i+j) % 2 === 0 ? "w" : "b"}">
+                <div on:mouseenter={onblockenter} on:mouseleave={onblockleave} role="figure" id={`block-${i}${j}`} class="block block-{(i+j) % 2 === 0 ? "w" : "b"}">
                     {#if block !== null}
                         <div id={`piece-${block.color}${block.type}${j}`} class="piece">
                             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" 
