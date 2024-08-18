@@ -1,9 +1,14 @@
  <script lang="ts">
     import type { Readable } from "svelte/store";
+    import { createEventDispatcher } from "svelte";
+    
+    import { SQUARES as blockIDs} from "chess.js";
     import type { Chess, Color } from "chess.js";
 
     import pieceSVG from "../../utils/svg";
     import { onMount } from "svelte";
+
+    const dispatch = createEventDispatcher();
 
     export let color: Color | undefined;
     export let chess: Readable<Chess>
@@ -11,25 +16,26 @@
     let offsetX: number | undefined;
     let offsetY: number | undefined;
 
-    let enteredBlock: HTMLElement | undefined;
-    let grabbedPiece: HTMLElement | undefined;
+    let currentBlock: HTMLElement | undefined;
+    let currentPiece: HTMLElement | undefined;
 
     let onblockenter: ((event: MouseEvent) => void) | null;
     let onblockleave: ((event: MouseEvent) => void) | null;
 
-    // a little janky but gets the job done pretty well
     onMount(() => {
         onmousedown = (event: MouseEvent) => {
-            grabbedPiece = event.target as HTMLElement;
-            if (!grabbedPiece || !grabbedPiece.id.startsWith("piece")) return;
+            // need to display possible moves for the piece
+    
+            currentPiece = event.target as HTMLElement;
+            if (!currentPiece || currentPiece.classList[0] !== "piece") return;
             
-            grabbedPiece.classList.add("dragging");
+            currentPiece.classList.add("dragging");
             document.body.style.cursor = "grabbing";
 
             let originalX = event.clientX;
             let originalY = event.clientY;
 
-            console.log("dragging", grabbedPiece.id);
+            console.log("dragging", currentPiece.id);
            
             onmousemove = (ev) => {
                 offsetX = ev.clientX - originalX;
@@ -37,23 +43,31 @@
             }
 
             onblockenter = (ev: MouseEvent) => {
-                enteredBlock = ev.target as HTMLElement;
-                enteredBlock.classList.add("drop-target");
+                currentBlock = ev.target as HTMLElement;
+                if (!currentBlock.hasChildNodes()) currentBlock.classList.add("hovering");
             }
 
             onblockleave = () => {
-                enteredBlock?.classList.remove("drop-target");
+                currentBlock?.classList.remove("hovering");
             }
 
             onmouseup = (ev) => {
-                onmousemove = onmouseup = null;
-                onblockenter = onblockleave = null;
+                let target = ev.target as HTMLElement;
 
-                enteredBlock?.classList.remove("drop-target");
-                grabbedPiece?.classList.remove("dragging");
+                currentBlock?.classList.remove("hovering");
+                currentPiece?.classList.remove("dragging");
+
+                if (target.classList[0] === "block") {
+                    dispatch("move", {
+                        from: currentPiece?.parentElement?.dataset.id,
+                        to: target.dataset.id
+                    })
+                }
 
                 offsetX = offsetY = undefined;
-                enteredBlock = grabbedPiece = undefined;
+                currentBlock = currentPiece = undefined;
+                onmousemove = onmouseup = null;
+                onblockenter = onblockleave = null;
 
                 document.body.style.cursor = "default";
                 console.log("dropping at", (ev.target as HTMLElement).id);
@@ -66,15 +80,23 @@
     {#each $chess.board() as row, i}
         <div class="row">
             {#each row as block, j}
-                <div on:mouseenter={onblockenter} on:mouseleave={onblockleave} role="figure" id={`block-${i}${j}`} class="block block-{(i+j) % 2 === 0 ? "w" : "b"}">
-                    {#if block !== null}
-                        <div id={`piece-${block.color}${block.type}${j}`} class="piece">
+                {@const index = (i+j)+(7*i)}
+                {@const blockID = blockIDs[index]}
+                {@const blockColor = (i+j) % 2 === 0 ? "w" : "b"}    
+
+                <div id="block-{blockID}" class="block block-{blockColor}" data-id={blockID}
+                     on:mouseenter={onblockenter} on:mouseleave={onblockleave}
+                     role="gridcell" tabindex="{index}">
+                     {#if block !== null}
+                        {@const piece = block}
+
+                        <div id="piece-{piece.color}{piece.type}{j}" class="piece">
                             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" 
-                                class="piece-svg piece-svg-{block.color}">
-                                {@html pieceSVG[block.type]}
+                                class="piece-svg piece-svg-{piece.color}">
+                                {@html pieceSVG[piece.type]}
                             </svg>  
                         </div>
-                    {/if}
+                     {/if}
                 </div>
             {/each}
         </div>
@@ -118,6 +140,10 @@
         background: #efefef;
     }
 
+    .hovering {
+        filter: brightness(0) saturate(100%) invert(85%) sepia(37%) saturate(439%) hue-rotate(76deg) brightness(99%) contrast(95%);
+    }
+
     .piece {
         display: block;
         height: 100%;
@@ -136,6 +162,7 @@
         stroke-width: .4px;
         -webkit-user-drag: auto;
         pointer-events: none;
+        z-index: 100;
     }
 
     .piece-svg-w {
@@ -149,10 +176,6 @@
     .dragging {
         pointer-events: none;
         transform: translate(var(--offsetX), var(--offsetY));
-    }
-
-    .drop-target {
-        filter: brightness(0) saturate(100%) invert(85%) sepia(37%) saturate(439%) hue-rotate(76deg) brightness(99%) contrast(95%);
     }
 </style>
 

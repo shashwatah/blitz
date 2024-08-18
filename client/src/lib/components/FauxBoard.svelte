@@ -2,7 +2,7 @@
     import type { PieceSymbol } from "chess.js";
     import pieceSVG from "../utils/svg";
 
-    let rows: PieceSymbol[][] = [["r", "n", "b", "k", "q", "b", "n", "r"],
+    let rows: PieceSymbol[][] = [["r", "n", "b", "q", "k", "b", "n", "r"],
                                 ["p", "p", "p", "p", "p", "p", "p", "p"]]
 </script>
 
