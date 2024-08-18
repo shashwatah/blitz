@@ -3,9 +3,9 @@ import { writable, type Writable, type Readable } from "svelte/store";
 import { Chess, type Color } from "chess.js";
 
 import type { GameStatus, GameType } from "../types/general";
-import { INIT, WAIT, ERROR, END, YOURSG } from "../utils/messages";
-import { BADCODE, OPPDSC, OPPRSG } from "../utils/messages";
-import { RESIGN } from "../utils/messages";
+import { WAIT, INIT, OPPMV, YOUMV, ERROR, WARN, END } from "../utils/messages";
+import { BADCODE, BADMOVE, OPPDSC, OPPRSG, YOURSG } from "../utils/messages";
+import { MOVE, RESIGN } from "../utils/messages";
 
 // much better than before, not bad at all
 // but still needs a few updates
@@ -17,7 +17,12 @@ class Game {
     // also the name color feels wrong since it's just the player's color
     private code: string | undefined = undefined;
     private color: Color | undefined = undefined;
-    
+
+    // should chess not be a store?
+    // could manage the game flow with a "moved" status or something 
+    // this is because i will eventually need to get valid moves after every turn
+    // this could also do away with the need to decide turn in /game
+    // might not go throught with this though
     private status: Writable<GameStatus> = writable("INACTIVE");
     private chess: Writable<Chess> = writable(new Chess());
 
@@ -49,25 +54,11 @@ class Game {
         this.chess.set(new Chess());
     }
 
-    connect(type: GameType, code?: string) {
-        let port = import.meta.env.VITE_PORT;
-        let host = import.meta.env.VITE_HOST || "localhost";
-
-        this.socket = new WebSocket(`ws://${host}:${port}/game/${type?.toLowerCase()}${code ? `/${code}` : ""}`);
-        
-        this.socket.onerror = (event) => {
-            console.log(event);
-            this.status.set("RESET");
-        }
-        
-        this.socket.onopen = () => {
-            this.listen();
-        }
-    }
-
-    listen() {
+    private listen() {
         if (!this.socket) return;
 
+        // badmv, oppmv and youmv work but are rudimentary
+        // need to iron out the message flow
         this.socket.onmessage = (event) => {
             let message = JSON.parse(event.data);
 
@@ -75,6 +66,16 @@ class Game {
                 if (message.error === BADCODE) {
                     console.log("[server]: bad game code");
                     this.status.set("CONNFAIL");
+                }
+            }
+
+            if (message.type === WARN) {
+                if (message.cause === BADMOVE) {
+                    this.chess.update((chess) => {
+                        chess.undo();
+                        return chess;
+                    });
+                    console.log("[server]: invalid move");
                 }
             }
 
@@ -92,6 +93,20 @@ class Game {
                 this.status.set("ACTIVE");
             }
 
+            if (message.type === OPPMV) {
+                this.chess.update(chess => {
+                    // what if the user has tampered with the client
+                    // incoming move might not be valid here
+                    chess.move(message.move);
+                    return chess;
+                });
+                console.log("[server]: opp moved", message.move);
+            }
+
+            if (message.type === YOUMV) {
+                console.log("[server]: you moved", message.move);
+            }
+
             if (message.type === END) {
                 if (message.cause === OPPDSC) console.log("[server]: opp has disconnected");
                 if (message.cause === OPPRSG) console.log("[server]: opp has resigned");
@@ -100,6 +115,41 @@ class Game {
                 this.status.set("END");
             }
         }
+    }
+
+    connect(type: GameType, code?: string) {
+        let port = import.meta.env.VITE_PORT;
+        let host = import.meta.env.VITE_HOST || "localhost";
+
+        this.socket = new WebSocket(`ws://${host}:${port}/game/${type?.toLowerCase()}${code ? `/${code}` : ""}`);
+        
+        this.socket.onerror = (event) => {
+            console.log(event);
+            this.status.set("RESET");
+        }
+        
+        this.socket.onopen = () => {
+            this.listen();
+        }
+    }
+
+    move(move: {from: string, to: string}) {
+        // this is a rudimentary move method, this works as of now
+        // this whole process needs to follow the flow ive created
+        // also, this needs to be made tamper proof (as far as i possibly can)
+        // this will also involve client (chessboard.svelte) validation
+        this.chess.update((chess) => {
+            try {
+                chess.move(move);
+            } catch (err) {
+                console.log("[client]: invalid move");
+                return chess;
+            }
+
+            this.socket?.send(JSON.stringify({type: MOVE, move: move}));
+
+            return chess;
+        })
     }
 
     resign() {

@@ -1,9 +1,9 @@
 <!-- todo:
         move 
-            drag and drop
-            controller msg
-            board update
+            get possible moves after every turn
+            display them when a piece is grabbed
             moves history
+            controller msg
 -->
 
 <script lang="ts">
@@ -15,10 +15,19 @@
     import ChatBox from "$lib/components/game/ChatBox.svelte";
     import GameButton from "$lib/components/game/GameButton.svelte";
     import MoveBoard from "$lib/components/game/MoveBoard.svelte";
+
+    import type { Board } from "$lib/types/general";
     
     import game from "$lib/controllers/game";
 
     let boardPos: "pulled" | "center" = "pulled";
+    let turn: boolean = false;
+    let board: Board = [];
+
+    // @ts-ignore
+    function move(event) {
+        game.move(event.detail);
+    }
 
     function resign() {
         game.resign();
@@ -30,10 +39,18 @@
             if (status === "END" || status === "INACTIVE") goto("/");
         });
 
+        // should this go inside an else statement in status sub?
+        game.CHESS.subscribe((chess) => {
+            // should this even be decided here
+            // more on this in the game controller
+            turn = game.COLOR === chess.turn();
+            board = chess.board();
+        });
+
         setTimeout(() => {
             boardPos = "center";
         }, 0);
-    })
+    });
 </script>
 
 {#if boardPos === "center"} 
@@ -51,7 +68,7 @@
 {/if}
    
 <div id="chessboard-container" class="chessboard-pos-{boardPos}">
-    <Chessboard color={game.COLOR} chess={game.CHESS}/>
+    <Chessboard color={game.COLOR} turn={turn} board={board} on:move={move}/>
 </div>
 
 {#if boardPos === "center"}

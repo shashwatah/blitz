@@ -1,17 +1,19 @@
  <script lang="ts">
-    import type { Readable } from "svelte/store";
-    import { createEventDispatcher } from "svelte";
+    // the board might be flipped wrong
+    // when player one moves their left most pawn
+    // player two also sees the left most pawn moving (from their perspective)
+
+    import { onMount, createEventDispatcher } from "svelte";
+    const dispatch = createEventDispatcher();
     
-    import { SQUARES as blockIDs} from "chess.js";
-    import type { Chess, Color } from "chess.js";
+    import { SQUARES as blockIDs, type Color} from "chess.js";
+    import type { Board } from "$lib/types/general";
 
     import pieceSVG from "../../utils/svg";
-    import { onMount } from "svelte";
-
-    const dispatch = createEventDispatcher();
 
     export let color: Color | undefined;
-    export let chess: Readable<Chess>
+    export let turn: boolean;
+    export let board: Board
 
     let offsetX: number | undefined;
     let offsetY: number | undefined;
@@ -25,9 +27,11 @@
     onMount(() => {
         onmousedown = (event: MouseEvent) => {
             // need to display possible moves for the piece
-    
+            if (!turn) return;
+ 
             currentPiece = event.target as HTMLElement;
             if (!currentPiece || currentPiece.classList[0] !== "piece") return;
+            if (currentPiece.dataset.color !== color) return;
             
             currentPiece.classList.add("dragging");
             document.body.style.cursor = "grabbing";
@@ -57,6 +61,9 @@
                 currentBlock?.classList.remove("hovering");
                 currentPiece?.classList.remove("dragging");
 
+                // this condition doesn't work for when trying to capture
+                // an opponent's piece or something similar
+                // event will target the piece on the block rather than the block itself
                 if (target.classList[0] === "block") {
                     dispatch("move", {
                         from: currentPiece?.parentElement?.dataset.id,
@@ -77,7 +84,7 @@
 </script>
 
 <div id="board" class="board-{color}" style="--offsetX: {offsetX}px; --offsetY: {offsetY}px">
-    {#each $chess.board() as row, i}
+    {#each board as row, i}
         <div class="row">
             {#each row as block, j}
                 {@const index = (i+j)+(7*i)}
@@ -90,7 +97,7 @@
                      {#if block !== null}
                         {@const piece = block}
 
-                        <div id="piece-{piece.color}{piece.type}{j}" class="piece">
+                        <div id="piece-{piece.color}{piece.type}{j}" class="piece" data-color={piece.color}>
                             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" 
                                 class="piece-svg piece-svg-{piece.color}">
                                 {@html pieceSVG[piece.type]}
