@@ -85,7 +85,7 @@
 
 <div id="board" class="board-{color}" style="--offsetX: {offsetX}px; --offsetY: {offsetY}px">
     {#each board as row, i}
-        <div class="row">
+        <div class="row row-{color}">
             {#each row as block, j}
                 {@const index = (i+j)+(7*i)}
                 {@const blockID = blockIDs[index]}
@@ -122,6 +122,9 @@
         flex-direction: column;
     }
 
+    /* this was a quick fix, and doesn't work
+       the board needs to be rotated
+       row reverse and column reverse */
     .board-b {
         flex-direction: column-reverse;
     }
@@ -130,7 +133,14 @@
         height: 12.5%;
         width: 100%;
         display: flex;
+    }
+
+    .row-w {
         flex-direction: row;
+    }
+    
+    .row-b {
+        flex-direction: row-reverse;
     }
 
     .block {
