@@ -1,11 +1,3 @@
-<!-- todo:
-        move 
-            get possible moves after every turn
-            display them when a piece is grabbed
-            moves history
-            controller msg
--->
-
 <script lang="ts">
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
@@ -19,10 +11,12 @@
     import type { Board } from "$lib/types/general";
     
     import game from "$lib/controllers/game";
+    import type { Move } from "chess.js";
 
     let boardPos: "pulled" | "center" = "pulled";
-    let turn: boolean = false;
     let board: Board = [];
+    let turn: boolean = false;
+    let moves: Move[] = [];
 
     // @ts-ignore
     function move(event) {
@@ -40,11 +34,15 @@
         });
 
         // should this go inside an else statement in status sub?
+        // this only works because the sub func gets once upon script run 
+        // don't need to put color in a separate var because by this time 
+        //      color has already been declared
         game.CHESS.subscribe((chess) => {
             // should this even be decided here
             // more on this in the game controller
-            turn = game.COLOR === chess.turn();
             board = chess.board();
+            turn = game.COLOR === chess.turn();
+            moves = turn ? chess.moves({verbose: true}) : [];
         });
 
         setTimeout(() => {
@@ -68,7 +66,7 @@
 {/if}
    
 <div id="chessboard-container" class="chessboard-pos-{boardPos}">
-    <Chessboard color={game.COLOR} turn={turn} board={board} on:move={move}/>
+    <Chessboard board={board} color={game.COLOR} turn={turn}  moves={moves} on:move={move}/>
 </div>
 
 {#if boardPos === "center"}

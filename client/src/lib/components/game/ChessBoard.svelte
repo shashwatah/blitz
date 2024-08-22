@@ -6,20 +6,21 @@
     import { onMount, createEventDispatcher } from "svelte";
     const dispatch = createEventDispatcher();
     
-    import { SQUARES as blockIDs, type Color} from "chess.js";
+    import { SQUARES as blockIDs, type Color, type Move} from "chess.js";
     import type { Board } from "$lib/types/general";
 
     import pieceSVG from "../../utils/svg";
 
     export let color: Color | undefined;
-    export let turn: boolean;
+    export let turn: boolean; // could just decide this by moves.length?
     export let board: Board
+    export let moves: Move[];
 
-    let offsetX: number | undefined;
-    let offsetY: number | undefined;
+    let offsetX: number;
+    let offsetY: number;
 
-    let currentBlock: HTMLElement | undefined;
-    let currentPiece: HTMLElement | undefined;
+    // let currentBlock: HTMLElement | undefined;
+    let currentPiece: HTMLElement;
 
     let onblockenter: ((event: MouseEvent) => void) | null;
     let onblockleave: ((event: MouseEvent) => void) | null;
@@ -33,51 +34,60 @@
             if (!currentPiece || currentPiece.classList[0] !== "piece") return;
             if (currentPiece.dataset.color !== color) return;
             
-            currentPiece.classList.add("dragging");
-            document.body.style.cursor = "grabbing";
-
             let originalX = event.clientX;
             let originalY = event.clientY;
+           
+            currentPiece.classList.add("dragging");
+            document.body.style.cursor = "grabbing";
+           
+            moves.filter(move => move.from === currentPiece?.dataset.block)
+                 .forEach(move => document.getElementById(`block-${move.to}`)?.classList.add("move-target"));
 
             console.log("dragging", currentPiece.id);
-           
+
             onmousemove = (ev) => {
                 offsetX = ev.clientX - originalX;
                 offsetY = ev.clientY - originalY;
             }
 
-            onblockenter = (ev: MouseEvent) => {
-                currentBlock = ev.target as HTMLElement;
-                if (!currentBlock.hasChildNodes()) currentBlock.classList.add("hovering");
-            }
+            // onblockenter = (ev: MouseEvent) => {
+            //     currentBlock = ev.target as HTMLElement;
+            //     if (!currentBlock.hasChildNodes()) currentBlock.classList.add("hovering");
+            // }
 
-            onblockleave = () => {
-                currentBlock?.classList.remove("hovering");
-            }
+            // onblockleave = () => {
+            //     currentBlock?.classList.remove("hovering");
+            // }
 
             onmouseup = (ev) => {
-                let target = ev.target as HTMLElement;
-
-                currentBlock?.classList.remove("hovering");
+                // currentBlock?.classList.remove("hovering");
                 currentPiece?.classList.remove("dragging");
+
+                Array.from(document.getElementsByClassName("move-target")).forEach(block => {
+                    block.classList.remove("move-target");
+                });;
+
+                document.body.style.cursor = "default";
+                
+                offsetX = offsetY = 0;
+                onmousemove = onmouseup = null;
+                // currentBlock =  undefined;
+                // onblockenter = onblockleave = null;
+
+                let target = ev.target as HTMLElement;
 
                 // this condition doesn't work for when trying to capture
                 // an opponent's piece or something similar
                 // event will target the piece on the block rather than the block itself
-                if (target.classList[0] === "block") {
-                    dispatch("move", {
-                        from: currentPiece?.parentElement?.dataset.id,
-                        to: target.dataset.id
-                    })
-                }
+                if (target.classList[0] !== "block") return;
+                if (target.dataset.id === currentPiece?.dataset.block) return;
 
-                offsetX = offsetY = undefined;
-                currentBlock = currentPiece = undefined;
-                onmousemove = onmouseup = null;
-                onblockenter = onblockleave = null;
-
-                document.body.style.cursor = "default";
-                console.log("dropping at", (ev.target as HTMLElement).id);
+                dispatch("move", {
+                    from: currentPiece?.parentElement?.dataset.id,
+                    to: target.dataset.id
+                });
+                
+                console.log("dropping at", target.id);
             }
         }
     });
@@ -97,7 +107,7 @@
                      {#if block !== null}
                         {@const piece = block}
 
-                        <div id="piece-{piece.color}{piece.type}{j}" class="piece" data-color={piece.color}>
+                        <div id="piece-{piece.color}{piece.type}{j}" class="piece" data-color={piece.color} data-block={blockID}>
                             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 32 40" 
                                 class="piece-svg piece-svg-{piece.color}">
                                 {@html pieceSVG[piece.type]}
@@ -122,9 +132,6 @@
         flex-direction: column;
     }
 
-    /* this was a quick fix, and doesn't work
-       the board needs to be rotated
-       row reverse and column reverse */
     .board-b {
         flex-direction: column-reverse;
     }
@@ -157,8 +164,9 @@
         background: #efefef;
     }
 
-    .hovering {
-        filter: brightness(0) saturate(100%) invert(85%) sepia(37%) saturate(439%) hue-rotate(76deg) brightness(99%) contrast(95%);
+    .move-target {
+        box-shadow: 0 0 0 2px lightgreen inset;
+        /* filter: brightness(0) saturate(100%) invert(85%) sepia(37%) saturate(439%) hue-rotate(76deg) brightness(99%) contrast(95%); */
     }
 
     .piece {

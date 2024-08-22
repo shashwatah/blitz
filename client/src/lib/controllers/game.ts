@@ -1,3 +1,15 @@
+// todo:
+//      possible moves highlight, only allow valid moves on client
+//      special moves: capturing, castelling, en passe, etc
+//          dropping a piece on a block with another piece doesn't detect the drop
+//      proper validation and syncing of moves
+//      timer, move history, modals & msgs
+//      make draggin piece exist above other pieces 
+//          (black pieces go under white ones rn)
+//      handle other buttons on game page (home & acc)
+//          clicking logo takes you to home but doesn't dsc socket
+//      there's more area to click on a piece than required
+
 import { writable, type Writable, type Readable } from "svelte/store";
 
 import { Chess, type Color } from "chess.js";
@@ -42,7 +54,7 @@ class Game {
                 console.log("[game]: resetting controller");
                 this.reset();
             }
-        }) 
+        });
     }
 
     private reset() {
