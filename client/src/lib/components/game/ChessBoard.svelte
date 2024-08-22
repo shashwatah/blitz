@@ -19,18 +19,14 @@
     let offsetX: number;
     let offsetY: number;
 
-    // let currentBlock: HTMLElement | undefined;
-    let currentPiece: HTMLElement;
-
     let onblockenter: ((event: MouseEvent) => void) | null;
     let onblockleave: ((event: MouseEvent) => void) | null;
 
     onMount(() => {
         onmousedown = (event: MouseEvent) => {
-            // need to display possible moves for the piece
-            if (!turn) return;
+            if (!turn) return; // will this hinder proper gameplay? 
  
-            currentPiece = event.target as HTMLElement;
+            let currentPiece = event.target as HTMLElement;
             if (!currentPiece || currentPiece.classList[0] !== "piece") return;
             if (currentPiece.dataset.color !== color) return;
             
@@ -39,10 +35,17 @@
            
             currentPiece.classList.add("dragging");
             document.body.style.cursor = "grabbing";
-           
-            moves.filter(move => move.from === currentPiece?.dataset.block)
-                 .forEach(move => document.getElementById(`block-${move.to}`)?.classList.add("move-target"));
 
+            // can i do it without creating an el?
+            // this will have to be different if theres a piece that can be captured
+            moves.filter(move => move.from === currentPiece?.dataset.block)
+            .forEach(move => {
+                let dot = document.createElement("span");
+                dot.className = "move-dot";
+                document.getElementById(`block-${move.to}`)?.appendChild(dot);
+            });
+            
+            let currentBlock: HTMLElement;
             console.log("dragging", currentPiece.id);
 
             onmousemove = (ev) => {
@@ -50,32 +53,29 @@
                 offsetY = ev.clientY - originalY;
             }
 
-            // onblockenter = (ev: MouseEvent) => {
-            //     currentBlock = ev.target as HTMLElement;
-            //     if (!currentBlock.hasChildNodes()) currentBlock.classList.add("hovering");
-            // }
+            onblockenter = (ev: MouseEvent) => {
+                currentBlock = ev.target as HTMLElement;
+                currentBlock.classList.add("hovering");
+            }
 
-            // onblockleave = () => {
-            //     currentBlock?.classList.remove("hovering");
-            // }
+            onblockleave = () => {
+                currentBlock?.classList.remove("hovering");
+            }
 
             onmouseup = (ev) => {
-                // currentBlock?.classList.remove("hovering");
                 currentPiece?.classList.remove("dragging");
-
-                Array.from(document.getElementsByClassName("move-target")).forEach(block => {
-                    block.classList.remove("move-target");
-                });;
-
+                currentBlock?.classList.remove("hovering");
                 document.body.style.cursor = "default";
+
+                Array.from(document.getElementsByClassName("move-dot")).forEach(dot => {
+                    dot.remove();
+                });
                 
                 offsetX = offsetY = 0;
                 onmousemove = onmouseup = null;
-                // currentBlock =  undefined;
-                // onblockenter = onblockleave = null;
+                onblockenter = onblockleave = null;
 
                 let target = ev.target as HTMLElement;
-
                 // this condition doesn't work for when trying to capture
                 // an opponent's piece or something similar
                 // event will target the piece on the block rather than the block itself
@@ -122,10 +122,11 @@
 
 <style>
     #board {
-        border: 2px solid #d1d1d1;
+        border: 1px solid #d1d1d1;
         height: 100%;
         width: 100%;
         display: flex;
+        overflow: hidden; /* temp solution for piece drag outside the board */
     }
 
     .board-w {
@@ -164,9 +165,8 @@
         background: #efefef;
     }
 
-    .move-target {
-        box-shadow: 0 0 0 2px lightgreen inset;
-        /* filter: brightness(0) saturate(100%) invert(85%) sepia(37%) saturate(439%) hue-rotate(76deg) brightness(99%) contrast(95%); */
+    .hovering {
+        box-shadow: 0 0 0 5px #d1d1d1 inset;
     }
 
     .piece {
@@ -201,6 +201,19 @@
     .dragging {
         pointer-events: none;
         transform: translate(var(--offsetX), var(--offsetY));
+    }
+    
+    /* https://stackoverflow.com/a/59670838 */
+    div :global(.move-dot) {
+        position: relative;
+        height: 30%;
+        width: 30%;
+        background: #a2a2a2;
+        opacity: 0.3;
+        margin-top: 40%;
+        border-radius: 50%;
+        display: inline-block;
+        pointer-events: none;
     }
 </style>
 
