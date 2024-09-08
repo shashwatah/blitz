@@ -83,6 +83,7 @@
                 // this condition doesn't work for when trying to capture
                 // an opponent's piece or something similar
                 // event will target the piece on the block rather than the block itself
+                if (target.classList[0] === "piece") target = target.parentElement as HTMLElement;
                 if (target.classList[0] !== "block") return;
                 if (target.dataset.id === currentPiece?.dataset.block) return;
 
