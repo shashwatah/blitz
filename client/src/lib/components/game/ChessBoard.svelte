@@ -40,9 +40,13 @@
             // this will have to be different if theres a piece that can be captured
             moves.filter(move => move.from === currentPiece?.dataset.block)
             .forEach(move => {
+                let block = document.getElementById(`block-${move.to}`);
+                if (!block) return;
+                
                 let dot = document.createElement("span");
-                dot.className = "move-dot";
-                document.getElementById(`block-${move.to}`)?.appendChild(dot);
+                dot.className = block.children.length === 0 ? "move-dot" : "capt-dot";
+
+                block.appendChild(dot);
             });
             
             let currentBlock: HTMLElement;
@@ -67,9 +71,14 @@
                 currentBlock?.classList.remove("hovering");
                 document.body.style.cursor = "default";
 
+                ///////////////
                 Array.from(document.getElementsByClassName("move-dot")).forEach(dot => {
                     dot.remove();
                 });
+                Array.from(document.getElementsByClassName("capt-dot")).forEach(dot => {
+                    dot.remove();
+                });
+                ///////////////
                 
                 offsetX = offsetY = 0;
                 onmousemove = onmouseup = null;
@@ -155,6 +164,7 @@
         height: 100%;
         width: 12.5%;
         text-align: center;
+        display: inline-block;
     }
 
     .block-w {
@@ -170,7 +180,6 @@
     }
 
     .piece {
-        display: block;
         height: 100%;
     }
 
@@ -187,7 +196,6 @@
         stroke-width: .4px;
         -webkit-user-drag: auto;
         pointer-events: none;
-        z-index: 100;
     }
 
     .piece-svg-w {
@@ -208,11 +216,24 @@
         position: relative;
         height: 30%;
         width: 30%;
-        background: #a2a2a2;
-        opacity: 0.3;
+        background: #d1d1d1;
         margin-top: 40%;
         border-radius: 50%;
         display: inline-block;
+        pointer-events: none;
+    }
+
+    div :global(.capt-dot) {
+        height: 60%;
+        width: 60%;
+        border-radius: 50%;
+        border: 0.3rem solid #d1d1d1;
+        display: block;
+        float: left;
+        /* transform: translateY(-50px); */
+        margin-left: 50%;
+        transform: translate(-50%, -115%);
+        /* float: none; */
         pointer-events: none;
     }
 </style>

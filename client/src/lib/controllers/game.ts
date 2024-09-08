@@ -9,6 +9,7 @@
 //      handle other buttons on game page (home & acc)
 //          clicking logo takes you to home but doesn't dsc socket
 //      there's more area to click on a piece than required
+//      show last made move (from any player) & indicator for a piece that can be captured
 
 import { writable, type Writable, type Readable } from "svelte/store";
 
