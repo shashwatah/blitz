@@ -40,14 +40,14 @@
             // this will have to be different if theres a piece that can be captured
             moves.filter(move => move.from === currentPiece?.dataset.block)
             .forEach(move => {
-                let block = document.getElementById(`block-${move.to}`);
-                if (!block) return;
-                
-                let target = document.createElement("span");
-                target.classList.add("target");
-                target.classList.add(block.children.length === 0 ? "move-target" : "capture-target");
+                let block = document.getElementById(`block-${move.to}`) as HTMLElement;
 
-                block.appendChild(target);
+                if (move.flags === "c")  // might need to revert this one later
+                    return (block.firstChild as HTMLElement).classList.add("target");
+
+                let dot = document.createElement("span");
+                dot.classList.add("target");
+                block.appendChild(dot);
             });
             
             let currentBlock: HTMLElement;
@@ -73,26 +73,30 @@
                 document.body.style.cursor = "default";
 
                 Array.from(document.getElementsByClassName("target"))
-                     .forEach(target => {target.remove()});
-                
+                .forEach(target => {
+                    if (target.nodeName === "SPAN") return target.remove();
+                    target.classList.remove("target");
+                });
+
                 offsetX = offsetY = 0;
                 onmousemove = onmouseup = null;
                 onblockenter = onblockleave = null;
 
                 let target = ev.target as HTMLElement;
+                if (target.classList[0] === "piece") target = target.parentElement as HTMLElement;
                 // this condition doesn't work for when trying to capture
                 // an opponent's piece or something similar
                 // event will target the piece on the block rather than the block itself
-                if (target.classList[0] === "piece") target = target.parentElement as HTMLElement;
                 if (target.classList[0] !== "block") return;
-                if (target.dataset.id === currentPiece?.dataset.block) return;
+                // don't need this one, it will be an invalid move anyway
+                if (target.dataset.id === currentPiece?.dataset.block) return; 
+
+                console.log("dropping at", target.id);
 
                 dispatch("move", {
                     from: currentPiece?.parentElement?.dataset.id,
                     to: target.dataset.id
                 });
-                
-                console.log("dropping at", target.id);
             }
         }
     });
@@ -184,6 +188,11 @@
         cursor: grab;
     }
 
+    .piece.target {
+        box-shadow: 0 0 0 5px #d1d1d1 inset;
+        border-radius: 50%;
+    }
+
     .piece-svg {
         position: relative;
         height: 90%;
@@ -208,9 +217,9 @@
         pointer-events: none;
         transform: translate(var(--offsetX), var(--offsetY));
     }
-    
+
     /* https://stackoverflow.com/a/59670838 */
-    div :global(.move-target) {
+    div :global(span.target) {
         display: inline-block;
         height: 30%;
         width: 30%;
@@ -218,19 +227,6 @@
         margin-top: 40%;
         background: #a2a2a2;
         opacity: 0.5;
-        pointer-events: none;
-    }
-
-    /* works but doesn't seem like the right way to do it */
-    div :global(.capture-target) {
-        height: 60%;
-        width: 60%;
-        border-radius: 50%;
-        border: 0.3rem solid #a2a2a2;
-        opacity: 0.5;
-        float: left;
-        margin-left: 50%;
-        transform: translate(-50%, -115%);
         pointer-events: none;
     }
 </style>
