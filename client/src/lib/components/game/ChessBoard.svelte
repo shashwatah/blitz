@@ -43,10 +43,11 @@
                 let block = document.getElementById(`block-${move.to}`);
                 if (!block) return;
                 
-                let dot = document.createElement("span");
-                dot.className = block.children.length === 0 ? "move-dot" : "capt-dot";
+                let target = document.createElement("span");
+                target.classList.add("target");
+                target.classList.add(block.children.length === 0 ? "move-target" : "capture-target");
 
-                block.appendChild(dot);
+                block.appendChild(target);
             });
             
             let currentBlock: HTMLElement;
@@ -71,14 +72,8 @@
                 currentBlock?.classList.remove("hovering");
                 document.body.style.cursor = "default";
 
-                ///////////////
-                Array.from(document.getElementsByClassName("move-dot")).forEach(dot => {
-                    dot.remove();
-                });
-                Array.from(document.getElementsByClassName("capt-dot")).forEach(dot => {
-                    dot.remove();
-                });
-                ///////////////
+                Array.from(document.getElementsByClassName("target"))
+                     .forEach(target => {target.remove()});
                 
                 offsetX = offsetY = 0;
                 onmousemove = onmouseup = null;
@@ -180,6 +175,7 @@
     }
 
     .piece {
+        position: relative;
         height: 100%;
     }
 
@@ -207,33 +203,33 @@
     }
 
     .dragging {
+        z-index: 100 !important;
         pointer-events: none;
         transform: translate(var(--offsetX), var(--offsetY));
     }
     
     /* https://stackoverflow.com/a/59670838 */
-    div :global(.move-dot) {
-        position: relative;
+    div :global(.move-target) {
+        display: inline-block;
         height: 30%;
         width: 30%;
-        background: #d1d1d1;
-        margin-top: 40%;
         border-radius: 50%;
-        display: inline-block;
+        margin-top: 40%;
+        background: #a2a2a2;
+        opacity: 0.5;
         pointer-events: none;
     }
 
-    div :global(.capt-dot) {
+    /* works but doesn't seem like the right way to do it */
+    div :global(.capture-target) {
         height: 60%;
         width: 60%;
         border-radius: 50%;
-        border: 0.3rem solid #d1d1d1;
-        display: block;
+        border: 0.3rem solid #a2a2a2;
+        opacity: 0.5;
         float: left;
-        /* transform: translateY(-50px); */
         margin-left: 50%;
         transform: translate(-50%, -115%);
-        /* float: none; */
         pointer-events: none;
     }
 </style>
