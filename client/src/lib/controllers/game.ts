@@ -10,6 +10,8 @@
 //          clicking logo takes you to home but doesn't dsc socket
 //      there's more area to click on a piece than required
 //      show last made move (from any player) & indicator for a piece that can be captured
+//      piece drag doesn't work on touch screens
+//      show last made move, and if king is in check?
 
 import { writable, type Writable, type Readable } from "svelte/store";
 
@@ -18,7 +20,10 @@ import { Chess, type Color } from "chess.js";
 import type { GameStatus, GameType } from "../types/general";
 import { WAIT, INIT, OPPMV, YOUMV, ERROR, WARN, END } from "../utils/messages";
 import { BADCODE, BADMOVE, OPPDSC, OPPRSG, YOURSG } from "../utils/messages";
+import { YOUWON, OPPWON } from "../utils/messages";
 import { MOVE, RESIGN } from "../utils/messages";
+
+// how to keep local timer in sync with server's timer?
 
 // much better than before, not bad at all
 // but still needs a few updates
@@ -124,7 +129,9 @@ class Game {
                 if (message.cause === OPPDSC) console.log("[server]: opp has disconnected");
                 if (message.cause === OPPRSG) console.log("[server]: opp has resigned");
                 if (message.cause === YOURSG) console.log("[server]: you have resigned");
-
+                if (message.cause === YOUWON) console.log(`[server]: you won by ${message.by}`);
+                if (message.cause === OPPWON) console.log(`[server]: opp won by ${message.by}`)
+                
                 this.status.set("END");
             }
         }

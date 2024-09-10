@@ -20,6 +20,11 @@ export const BADMOVE = "bad_move";
 export const YOURSG = "you_resigned";
 export const OPPRSG= "opp_resigned";
 export const OPPDSC = "opp_disconnected";
+export const YOUWON = "you_won";
+export const OPPWON = "opp_won"
+
+// INCOMING WIN CAUSES 
+export const TIMER = "timer"
 
 // OUTGOING
 export const MOVE = "move";         // {type: MOVE, move : {from, to}}

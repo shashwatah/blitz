@@ -33,6 +33,8 @@
             let originalX = event.clientX;
             let originalY = event.clientY;
            
+            console.log("dragging", currentPiece.id);
+
             currentPiece.classList.add("dragging");
             document.body.style.cursor = "grabbing";
 
@@ -51,7 +53,6 @@
             });
             
             let currentBlock: HTMLElement;
-            console.log("dragging", currentPiece.id);
 
             onmousemove = (ev) => {
                 offsetX = ev.clientX - originalX;
