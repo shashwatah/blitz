@@ -10,13 +10,16 @@ import { genRandomStr } from "../utils/helpers";
 import { MOVE, RESIGN } from "../utils/messages";
 import { INIT, YOUMV, OPPMV, END, WARN, ERROR} from "../utils/messages";
 import { BADMSG, BADJSON, BADTURN, BADMOVE } from "../utils/messages";
-import { YOURSG, OPPRSG, OPPDSC } from "../utils/messages";
+import { YOURSG, OPPRSG, OPPDSC, YOUWON, OPPWON } from "../utils/messages";
+import { TIMEOUT } from "../utils/messages";
 
 export default class Game { 
     private id: string;
     private status: GameStatus;
-    private players: { [key: string]: Player }
     private chess: Chess;
+    private players: { [key: string]: Player } = {};
+    private timestamp: number = 0;
+    private timer: NodeJS.Timeout | undefined;
     // private type: GameType;      // might need it later
     // private moves: Array<Move>   // move history, chess.history??
 
@@ -25,14 +28,16 @@ export default class Game {
 
         this.id = genRandomStr();
         this.status = "ACTIVE";
-        this.players = {};
+        this.chess = new Chess();
+        
         this.players[colorOne] = new Player(userOne, colorOne);
         this.players[colorTwo] = new Player(userTwo, colorTwo);
-        this.chess = new Chess();
 
-        // merge into one later? will have to change tell funcs
-        this.tellOne("w", JSON.stringify({type: INIT, data: {id: this.id, color: "w"}}));
-        this.tellOne("b", JSON.stringify({type: INIT, data: {id: this.id, color: "b"}}));
+        ["w", "b"].forEach(color => {
+            this.players[color].tell(JSON.stringify({type: INIT, data: {id: this.id, color: color}}));
+        });
+
+        this.setTimer();
 
         this.listen(this.players["w"]);
         this.listen(this.players["b"]);
@@ -42,6 +47,25 @@ export default class Game {
         return Math.random() < 0.5 ? 
             ["w", "b"] : 
             ["b", "w"];
+    }
+
+    private setTimer(prevTurn ?: Color) {
+        let currentTime = new Date().getTime();
+
+        if (prevTurn) {
+            clearTimeout(this.timer);
+            this.players[prevTurn].remTime -= currentTime - this.timestamp; 
+            console.log(`time remaining for ${prevTurn} = ${this.players[prevTurn].remTime/1000}s`);
+        } 
+
+        this.timestamp = currentTime;
+        this.timer = setTimeout((game: Game) => {
+            game.status = "TIMEOUT";
+
+            let player = game.players[game.chess.turn()];
+            player.tell(JSON.stringify({type: END, cause: OPPWON, by: TIMEOUT}));
+            player.exit();
+        }, this.players[this.chess.turn()].remTime, this);
     }
 
     private listen(player: Player) {
@@ -90,9 +114,12 @@ export default class Game {
                     player.tell(JSON.stringify(JSON.stringify({type: WARN, cause: BADMOVE})));
                     return;
                 }
-                
+
                 player.tell(JSON.stringify({type: YOUMV, move: move}));
-                this.tellOne(player.COLOR === "w" ? "b" : "w", JSON.stringify({type: OPPMV, move: move}));
+                this.players[this.chess.turn()].tell(JSON.stringify({type: OPPMV, move: move}));
+             
+                this.setTimer(player.COLOR);
+
                 return;
             }
 
@@ -100,18 +127,21 @@ export default class Game {
         });
     }   
 
-    private tellOne(color: Color, message: string) {
-        this.players[color].tell(message);
-    }
-
-    endedBy(userID: string) {
-        let player = userID === this.players["w"].ID ?
+    end(loserID: string) {
+        let player = loserID === this.players["w"].ID ?
                      this.players["b"] : this.players["w"]; 
         
-        let cause = this.status === "RESIGNED" ? OPPRSG : OPPDSC;
+        let cause;
+        if (this.status === "ACTIVE") cause = OPPDSC;
+        if (this.status === "RESIGNED") cause =  OPPRSG;
+        if (this.status === "TIMEOUT") cause = YOUWON;
+
+        let by;
+        if (this.status === "TIMEOUT") by = TIMEOUT;
+
         this.status = "END";
-        
-        player.tell(JSON.stringify({type: END, cause: cause}));
+
+        player.tell(JSON.stringify({type: END, cause: cause, by: by}));
         player.exit();
     }
 

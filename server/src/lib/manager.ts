@@ -95,7 +95,7 @@ export default class Manager {
         // if user left a game by quitting the session or in game action (resign)
         let game = this.games.find((game) => game.hasUser(user.ID));
         if (!game || game.STATUS === "END") return false;
-        game.endedBy(user.ID);
+        game.end(user.ID);
         this.games = this.games.filter((g) => g.ID !== game.ID);
         
         return true;

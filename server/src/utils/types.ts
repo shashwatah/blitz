@@ -1,1 +1,1 @@
-export type GameStatus = "ACTIVE" | "RESIGNED" | "END";
+export type GameStatus = "ACTIVE" | "RESIGNED"| "TIMEOUT" | "END";

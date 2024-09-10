@@ -24,3 +24,8 @@ export const BADMOVE = "bad_move";
 export const YOURSG = "you_resigned";
 export const OPPRSG= "opp_resigned";
 export const OPPDSC = "opp_disconnected";
+export const YOUWON = "you_won";
+export const OPPWON = "opp_won";
+
+// OUTGOING WIN CAUSES
+export const TIMEOUT = "time_out"
