@@ -15,25 +15,27 @@ import { YOURSG, OPPRSG, OPPDSC } from "../utils/messages";
 export default class Game { 
     private id: string;
     private status: GameStatus;
-    private players: Player[];
+    private players: { [key: string]: Player }
     private chess: Chess;
     // private type: GameType;      // might need it later
     // private moves: Array<Move>   // move history, chess.history??
 
     constructor(userOne: User, userTwo: User) {
-        let [color1, color2] = this.rngColor();
+        let [colorOne, colorTwo] = this.rngColor();
 
         this.id = genRandomStr();
         this.status = "ACTIVE";
-        this.players = [new Player(userOne, color1), new Player(userTwo, color2)];
+        this.players = {};
+        this.players[colorOne] = new Player(userOne, colorOne);
+        this.players[colorTwo] = new Player(userTwo, colorTwo);
         this.chess = new Chess();
 
         // merge into one later? will have to change tell funcs
         this.tellOne("w", JSON.stringify({type: INIT, data: {id: this.id, color: "w"}}));
         this.tellOne("b", JSON.stringify({type: INIT, data: {id: this.id, color: "b"}}));
 
-        this.listen(this.players[0]);
-        this.listen(this.players[1]);
+        this.listen(this.players["w"]);
+        this.listen(this.players["b"]);
     }
 
     private rngColor(): [Color, Color] {
@@ -99,24 +101,23 @@ export default class Game {
     }   
 
     private tellOne(color: Color, message: string) {
-        this.players.forEach((player) => {
-            if (player.COLOR === color) player.tell(message);
-        });
+        this.players[color].tell(message);
     }
 
     endedBy(userID: string) {
+        let player = userID === this.players["w"].ID ?
+                     this.players["b"] : this.players["w"]; 
+        
         let cause = this.status === "RESIGNED" ? OPPRSG : OPPDSC;
         this.status = "END";
-        this.players.forEach((player) => {
-            if (userID === player.ID) return;
-            player.tell(JSON.stringify({type: END, cause: cause}));
-            player.exit();
-        });
+        
+        player.tell(JSON.stringify({type: END, cause: cause}));
+        player.exit();
     }
 
     hasUser(userID: string): boolean {
-        if (userID === this.players[0].ID) return true;
-        if (userID === this.players[1].ID) return true;
+        if (userID === this.players["w"].ID) return true;
+        if (userID === this.players["b"].ID) return true;
         return false;
     }
 
